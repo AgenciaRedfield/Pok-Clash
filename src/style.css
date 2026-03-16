@@ -999,7 +999,7 @@ body {
   perspective: 1000px;
 }
 
-/* Arena setup */
+/* Arena setup — Clash Royale style */
 #arena {
   flex-grow: 1;
   position: relative;
@@ -1007,69 +1007,87 @@ body {
   background-image:
     /* Grass texture */
     url('https://www.transparenttextures.com/patterns/p6.png'),
-    /* Left lane — path to left bridge */
-    linear-gradient(to bottom,
-      rgba(160,120,70,0.18) 0%,
-      rgba(160,120,70,0.28) 44%,
-      transparent 44%,
-      transparent 56%,
-      rgba(160,120,70,0.28) 56%,
-      rgba(160,120,70,0.18) 100%
-    ),
-    /* Right lane — path to right bridge */
-    linear-gradient(to bottom,
-      rgba(160,120,70,0.18) 0%,
-      rgba(160,120,70,0.28) 44%,
-      transparent 44%,
-      transparent 56%,
-      rgba(160,120,70,0.28) 56%,
-      rgba(160,120,70,0.18) 100%
-    ),
-    /* Base field gradient */
-    linear-gradient(to bottom, #2d5a1e, #3a7028, #2d5a1e);
+    /* LEFT sandy lane — full height, aligns with left bridge */
+    linear-gradient(rgba(175,130,65,0.55), rgba(175,130,65,0.55)),
+    /* RIGHT sandy lane — full height, aligns with right bridge */
+    linear-gradient(rgba(175,130,65,0.55), rgba(175,130,65,0.55)),
+    /* Enemy king tower territory — lighter top zone */
+    linear-gradient(to bottom, rgba(50,90,30,0.5) 0%, transparent 25%),
+    /* Player king tower territory — lighter bottom zone */
+    linear-gradient(to top, rgba(30,60,80,0.4) 0%, transparent 25%),
+    /* Base grass gradient (brighter center) */
+    linear-gradient(to bottom, #325e20, #3e7a28, #4a8a30, #3e7a28, #325e20);
   background-size:
     auto,
-    20% 100%,
-    20% 100%,
+    22% 100%,
+    22% 100%,
+    100% 100%,
+    100% 100%,
     100% 100%;
   background-position:
     0 0,
-    17% 0,
+    15% 0,
     63% 0,
+    0 0,
+    0 100%,
     0 0;
   background-repeat:
     repeat,
-    no-repeat,
-    no-repeat,
+    no-repeat, no-repeat,
+    no-repeat, no-repeat,
     no-repeat;
   transform: rotateX(5deg);
   transform-origin: bottom;
-  box-shadow: inset 0 0 100px rgba(0,0,0,0.4);
+  box-shadow: inset 0 0 80px rgba(0,0,0,0.3);
+  overflow: hidden;
 }
 
-/* Path markings and vignette */
+/* Side barriers & lane edge darkening */
 #arena::before {
   content: "";
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
   background:
-    /* Corner lights */
-    radial-gradient(ellipse at 20% 15%, rgba(255,255,255,0.07) 0%, transparent 55%),
-    radial-gradient(ellipse at 80% 15%, rgba(255,255,255,0.07) 0%, transparent 55%),
-    radial-gradient(ellipse at 20% 85%, rgba(255,255,255,0.07) 0%, transparent 55%),
-    radial-gradient(ellipse at 80% 85%, rgba(255,255,255,0.07) 0%, transparent 55%),
+    /* Left fence barrier */
+    repeating-linear-gradient(
+      to bottom,
+      rgba(80,50,20,0.7) 0px, rgba(80,50,20,0.7) 3px,
+      rgba(60,35,10,0.3) 4px, rgba(60,35,10,0.3) 28px,
+      rgba(80,50,20,0.7) 29px, rgba(80,50,20,0.7) 32px
+    ),
+    /* Right fence barrier */
+    repeating-linear-gradient(
+      to bottom,
+      rgba(80,50,20,0.7) 0px, rgba(80,50,20,0.7) 3px,
+      rgba(60,35,10,0.3) 4px, rgba(60,35,10,0.3) 28px,
+      rgba(80,50,20,0.7) 29px, rgba(80,50,20,0.7) 32px
+    ),
     /* Center vignette */
-    radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.25) 100%);
+    radial-gradient(ellipse at 50% 50%, transparent 35%, rgba(0,0,0,0.2) 100%);
+  background-size: 12px 100%, 12px 100%, 100% 100%;
+  background-position: 2px 0, calc(100% - 2px) 0, 0 0;
+  background-repeat: repeat-y, repeat-y, no-repeat;
   pointer-events: none;
   z-index: 1;
 }
 
+/* Lane edge lines — subtle lane boundary markers */
 #arena::after {
   content: "";
   position: absolute;
-  top: 10%; left: 15%; right: 15%; bottom: 10%;
-  border: 3px solid rgba(255,255,255,0.04);
-  border-radius: 50px;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background:
+    /* Left lane left edge */
+    linear-gradient(transparent, transparent) 15% 0 / 1px 100% no-repeat,
+    /* Left lane right edge */
+    linear-gradient(transparent, transparent) 37% 0 / 1px 100% no-repeat,
+    /* Right lane left edge */
+    linear-gradient(transparent, transparent) 63% 0 / 1px 100% no-repeat,
+    /* Right lane right edge */
+    linear-gradient(transparent, transparent) 85% 0 / 1px 100% no-repeat;
+  box-shadow:
+    inset 15px 0 0 rgba(0,0,0,0.15),
+    inset -15px 0 0 rgba(0,0,0,0.15);
   pointer-events: none;
   z-index: 1;
 }
@@ -1078,24 +1096,26 @@ body {
   position: absolute;
   top: 50%;
   width: 100%;
-  height: 8%;
+  height: 9%;
   background:
     url('https://www.transparenttextures.com/patterns/water.png') repeat,
     linear-gradient(to bottom,
-      #1a3fa0 0%,
-      #2563eb 30%,
-      #3b82f6 50%,
-      #2563eb 70%,
-      #1a3fa0 100%
+      #0f2d6e 0%,
+      #1a4fb5 25%,
+      #2563eb 50%,
+      #1a4fb5 75%,
+      #0f2d6e 100%
     );
   background-size: 200px 100%, 100% 100%;
   transform: translateY(-50%);
   box-shadow:
-    0 6px 20px rgba(0,0,0,0.6),
-    inset 0 0 20px rgba(0,0,0,0.4),
-    0 0 0 2px rgba(59,130,246,0.3);
+    0 4px 0 rgba(0,0,0,0.5),
+    0 -4px 0 rgba(0,0,0,0.5),
+    inset 0 0 30px rgba(0,0,0,0.5);
   z-index: 2;
-  animation: river-flow 3s linear infinite;
+  animation: river-flow 2.5s linear infinite;
+  border-top: 3px solid rgba(10, 30, 90, 0.8);
+  border-bottom: 3px solid rgba(10, 30, 90, 0.8);
 }
 
 @keyframes river-flow {
@@ -1119,44 +1139,67 @@ body {
   position: absolute;
   top: 50%;
   width: 18%;
-  height: 10%;
-  background: linear-gradient(to bottom, #7a5535, #5c4033, #4a3228);
+  height: 13%;  /* slightly taller to match river height */
   transform: translateY(-50%);
-  border: 2px solid #3d2b22;
-  border-top: 3px solid #8b6342;
-  border-bottom: 3px solid #2d1f17;
-  box-shadow:
-    0 6px 15px rgba(0,0,0,0.7),
-    inset 0 2px 0 rgba(255,255,255,0.08);
-  z-index: 3;
-  border-radius: 2px;
+  z-index: 4;  /* above river */
+  border-radius: 0;
 }
 
-.bridge::before {
-  content: "";
-  position: absolute;
-  top: -4px; bottom: -4px; left: -4px; right: -4px;
-  border: 2px solid rgba(100,70,40,0.5);
-  border-radius: 2px;
-  pointer-events: none;
-}
-
+/* Bridge road (the walkable planks) */
 .bridge::after {
   content: "";
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
+  background:
+    /* Vertical plank lines */
+    repeating-linear-gradient(
+      90deg,
+      rgba(0,0,0,0.35) 0px, rgba(0,0,0,0.35) 2px,
+      rgba(255,255,255,0.06) 3px, transparent 4px,
+      transparent 18px
+    ),
+    /* Bridge planks base */
+    linear-gradient(to bottom,
+      #8b6342 0%,
+      #6b4a2d 40%,
+      #5a3d24 60%,
+      #6b4a2d 100%
+    );
+  border-top: 4px solid #4a3020;
+  border-bottom: 4px solid #4a3020;
+  box-shadow:
+    inset 0 3px 0 rgba(255,255,255,0.1),
+    0 4px 12px rgba(0,0,0,0.8);
+}
+
+/* Bridge top fence rail */
+.bridge::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 0; right: 0;
+  height: 10px;
   background: repeating-linear-gradient(
     90deg,
-    rgba(0,0,0,0.25) 0px,
-    rgba(0,0,0,0.25) 1px,
-    rgba(255,255,255,0.04) 2px,
-    transparent 3px,
-    transparent 14px
+    #5c4033 0px, #5c4033 6px,
+    transparent 7px, transparent 16px,
+    #5c4033 17px, #5c4033 18px
   );
+  border-top: 3px solid #7a5535;
+  z-index: 5;
 }
 
 .bridge.left  { left: 18%; }
 .bridge.right { right: 18%; }
+
+/* Bridge bottom fence rail clone via box-shadow trick on after */
+.bridge.left::after, .bridge.right::after {
+  box-shadow:
+    inset 0 3px 0 rgba(255,255,255,0.1),
+    0 4px 12px rgba(0,0,0,0.8),
+    0 12px 0 #5c4033,
+    0 15px 0 #7a5535;
+}
 
 /* Towers */
 .tower {
@@ -1283,153 +1326,203 @@ body {
 }
 
 #uiContainer {
-  height: 155px;
-  background: linear-gradient(to bottom,
-    rgba(10, 16, 32, 0.85) 0%,
-    rgba(5, 8, 20, 0.97) 100%
-  );
+  height: 160px;
+  background:
+    linear-gradient(180deg, rgba(15,20,40,0.92) 0%, rgba(6,10,24,0.98) 100%);
   backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255,255,255,0.12);
+  border-top: 2px solid rgba(80,100,160,0.4);
   display: flex;
   flex-direction: column;
-  padding: 10px 12px 8px;
+  padding: 8px 8px 0;
   z-index: 30;
   box-shadow:
-    0 -8px 32px rgba(0,0,0,0.6),
-    inset 0 1px 0 rgba(255,255,255,0.06);
+    0 -6px 30px rgba(0,0,0,0.7),
+    inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
 #cardHand {
   display: flex;
-  justify-content: space-around;
-  align-items: center;
+  justify-content: flex-start;
+  align-items: flex-end;
+  gap: 6px;
   flex-grow: 1;
+  padding-bottom: 4px;
 }
 
+/* === Clash Royale-style Card Slots === */
 .card-slot {
-  width: 21%;
+  flex: 1;
+  max-width: 90px;
   aspect-ratio: 3/4;
-  background: linear-gradient(160deg, #1e3a5f 0%, #0f1f36 60%, #0a1525 100%);
-  border: 1px solid rgba(100, 160, 255, 0.2);
+  background: linear-gradient(180deg, #1a2d4a 0%, #0d1b2e 70%, #091420 100%);
+  border: 2px solid rgba(70, 120, 200, 0.35);
   border-radius: 10px;
   position: relative;
-  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: grab;
   box-shadow:
-    0 4px 8px rgba(0,0,0,0.5),
-    inset 0 1px 0 rgba(255,255,255,0.05);
+    0 4px 10px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.07),
+    inset 0 -1px 0 rgba(0,0,0,0.4);
   overflow: hidden;
 }
 
+/* Glossy top shine */
 .card-slot::before {
   content: "";
   position: absolute;
-  inset: 0;
-  border-radius: 10px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 60%);
+  top: 0; left: 0; right: 0;
+  height: 40%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.08), transparent);
+  border-radius: 8px 8px 0 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Bottom cost bar */
+.card-slot::after {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 22%;
+  background: rgba(0,0,0,0.5);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  border-radius: 0 0 8px 8px;
   pointer-events: none;
 }
 
 .card-slot:hover:not(.disabled) {
-  transform: translateY(-8px) scale(1.04);
-  border-color: rgba(100, 180, 255, 0.5);
+  transform: translateY(-10px) scale(1.05);
+  border-color: rgba(120, 180, 255, 0.7);
   box-shadow:
-    0 12px 20px rgba(0,0,0,0.5),
-    0 0 12px rgba(59,130,246,0.3);
+    0 14px 24px rgba(0,0,0,0.6),
+    0 0 16px rgba(60,130,255,0.4);
 }
 
 .card-slot:active { cursor: grabbing; }
 
 .card-slot.active {
-  transform: translateY(-14px) scale(1.06);
+  transform: translateY(-16px) scale(1.08);
+  border-color: rgba(255,255,255,0.95);
   box-shadow:
-    0 0 20px rgba(255, 255, 255, 0.4),
-    0 0 40px rgba(59, 130, 246, 0.3);
-  border-color: rgba(255,255,255,0.9);
+    0 0 24px rgba(255,255,255,0.45),
+    0 0 50px rgba(59,130,246,0.35);
 }
 
 .card-slot.disabled {
-  filter: grayscale(100%) brightness(0.5);
+  filter: grayscale(100%) brightness(0.4);
   pointer-events: none;
+  opacity: 0.7;
 }
 
 .card-slot img {
-  width: 80%;
-  height: 80%;
+  width: 85%;
+  height: 68%;
   object-fit: contain;
+  margin-bottom: 18%;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6));
 }
 
+/* Elixir cost badge — bottom center, Clash Royale style */
 .card-slot .energy-cost {
   position: absolute;
-  top: -8px;
-  right: -8px;
-  background: linear-gradient(#d946ef, #a855f7);
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #c026d3, #7c3aed);
   color: white;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 900;
-  font-size: 14px;
-  border: 2px solid white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  font-size: 13px;
+  border: 2px solid rgba(255,255,255,0.5);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.6), 0 0 8px rgba(168,85,247,0.5);
+  z-index: 3;
 }
 
+/* === NEXT card — left side, Clash Royale style === */
 #nextCardSlot {
-  width: 14%;
-  aspect-ratio: 1;
+  width: 52px;
+  flex-shrink: 0;
+  aspect-ratio: 3/4;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(0,0,0,0.4);
-  border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.1);
+  background: linear-gradient(180deg, #111e30, #080f1e);
+  border: 2px solid rgba(60, 100, 180, 0.4);
+  border-radius: 8px;
   position: relative;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.6);
+  opacity: 0.85;
+}
+
+#nextCardSlot .title {
+  display: none;  /* hidden, we use ::before instead */
 }
 
 #nextCardSlot::before {
   content: "NEXT";
   position: absolute;
-  top: -12px;
+  top: -14px;
   font-size: 8px;
   font-weight: 900;
-  color: #fbbf24;
-  letter-spacing: 1px;
+  color: #facc15;
+  letter-spacing: 1.5px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+}
+
+#nextCardSlot .preview {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #nextCardSlot img {
-  width: 70%;
-  height: 70%;
+  width: 80%;
+  height: 80%;
   object-fit: contain;
-  opacity: 0.7;
+  opacity: 0.75;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
 }
 
+/* === Clash Royale-style Elixir Bar (full width, bottom of HUD) === */
 #elixirBarContainer {
-  height: 14px;
-  background: rgba(0,0,0,0.5);
-  border-radius: 7px;
-  margin-top: 10px;
+  height: 20px;
+  background: rgba(0,0,0,0.6);
+  border-radius: 0;
+  margin-top: 0;
   position: relative;
   overflow: visible;
-  border: 1px solid rgba(168, 85, 247, 0.25);
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+  border-top: 1px solid rgba(168, 85, 247, 0.3);
+  flex-shrink: 0;
 }
 
 #elixirBarFill {
   height: 100%;
-  width: 100%;
-  background: linear-gradient(90deg, #9333ea, #c026d3, #a855f7);
+  width: 50%;  /* starts at 5/10 elixir */
+  background: linear-gradient(90deg,
+    #6d1f8e 0%,
+    #9333ea 40%,
+    #c026d3 70%,
+    #db2777 100%
+  );
   background-size: 200% 100%;
-  border-radius: 7px;
+  border-radius: 0;
   transition: width 0.1s linear;
-  box-shadow: 0 0 14px rgba(168, 85, 247, 0.7);
+  box-shadow:
+    0 0 20px rgba(168, 85, 247, 0.6),
+    inset 0 1px 0 rgba(255,255,255,0.2);
   animation: elixir-shimmer 2s linear infinite;
 }
 
@@ -1438,33 +1531,48 @@ body {
   100% { background-position: 200% center; }
 }
 
+/* Elixir segments (10 divisions) */
+#elixirBarFill::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; width: 1000%; height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent calc(10% - 1px),
+    rgba(0,0,0,0.4) calc(10% - 1px),
+    rgba(0,0,0,0.4) 10%
+  );
+  pointer-events: none;
+}
+
 #elixirBarFill::after {
   content: "";
   position: absolute;
-  top: 0; left: 0; width: 100%; height: 50%;
-  background: linear-gradient(to bottom, rgba(255,255,255,0.25), transparent);
-  border-radius: 7px 7px 0 0;
+  top: 0; left: 0; width: 100%; height: 45%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.2), transparent);
 }
 
+/* Elixir count number — left of bar */
 #elixirText {
   position: absolute;
-  left: -28px;
+  left: -32px;
   top: 50%;
   transform: translateY(-50%);
-  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  background: linear-gradient(135deg, #9333ea, #6d28d9);
   color: white;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 900;
-  font-size: 13px;
-  border: 2px solid rgba(255,255,255,0.3);
+  font-size: 14px;
+  border: 2px solid rgba(255,255,255,0.4);
   box-shadow:
-    0 0 12px rgba(168, 85, 247, 0.9),
-    0 2px 4px rgba(0,0,0,0.5);
+    0 0 14px rgba(147, 51, 234, 0.9),
+    0 2px 6px rgba(0,0,0,0.6);
 }
 
 #gameOverScreen {
