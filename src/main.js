@@ -41,7 +41,8 @@ let GAME_DATA = {
   
   // Battle State
   matchTime: 180,
-  battleInterval: null
+  battleInterval: null,
+  projectiles: []
 };
 
 // --- Persistência (LocalStorage) ---
@@ -413,6 +414,12 @@ async function startDataFetch() {
           hp = Math.floor(hp * rarityMult);
           atk = Math.floor(atk * rarityMult);
 
+          // Ranged types
+          const rangedTypes = ['fire', 'water', 'electric', 'grass', 'psychic', 'ice', 'fairy', 'dragon', 'ghost'];
+          const unitTypes = data.types.map(t => t.type.name);
+          const isRanged = unitTypes.some(t => rangedTypes.includes(t));
+          const range = isRanged ? 70 : 30;
+
           return {
             id: data.id,
             name: data.name,
@@ -423,11 +430,12 @@ async function startDataFetch() {
             maxHp: hp,
             atk: atk,
             speed: data.stats.find(s => s.stat.name === 'speed').base_stat / 2,
-            range: 30,
+            range: range,
             atkSpeed: 1000 + Math.random() * 500,
             cost: cost,
             level: 1,
-            rarity: rarity
+            rarity: rarity,
+            types: unitTypes
           };
         })
     );
@@ -435,6 +443,39 @@ async function startDataFetch() {
   
   const results = await Promise.all(promises);
   GAME_DATA.pokemonList = results;
+  
+  // Add Spells
+  const spells = [
+    {
+      id: "spell_fireball",
+      name: "Explosão de Fogo",
+      frontSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/fire-stone.png",
+      backSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/fire-stone.png",
+      effectSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/red-flute.png",
+      isSpell: true,
+      atk: 250, hp: 0, maxHp: 0,
+      radius: 12,
+      cost: 4,
+      level: 1,
+      rarity: "Épica",
+      types: ["fire"]
+    },
+    {
+      id: "spell_thunder",
+      name: "Raio",
+      frontSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/thunder-stone.png",
+      backSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/thunder-stone.png",
+      effectSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/yellow-flute.png",
+      isSpell: true,
+      atk: 100, hp: 0, maxHp: 0,
+      radius: 8,
+      cost: 2,
+      level: 1,
+      rarity: "Comum",
+      types: ["electric"]
+    }
+  ];
+  GAME_DATA.pokemonList.push(...spells);
   
   // Try to load saved game
   const hasSave = loadGame();
@@ -792,12 +833,12 @@ document.getElementById("toBattleBtn").addEventListener("click", () => {
 // Tower Setup
 function initTowers() {
   GAME_DATA.towers = [
-    { id: "enemyKingTower", team: "enemy", hp: 1500, maxHp: 1500, isKing: true, el: document.getElementById("enemyKingTower"), x: 50, y: 5 },
-    { id: "enemyTowerLeft", team: "enemy", hp: 800, maxHp: 800, isKing: false, el: document.getElementById("enemyTowerLeft"), x: 20, y: 20 },
-    { id: "enemyTowerRight", team: "enemy", hp: 800, maxHp: 800, isKing: false, el: document.getElementById("enemyTowerRight"), x: 80, y: 20 },
-    { id: "playerKingTower", team: "player", hp: 1500, maxHp: 1500, isKing: true, el: document.getElementById("playerKingTower"), x: 50, y: 95 },
-    { id: "playerTowerLeft", team: "player", hp: 800, maxHp: 800, isKing: false, el: document.getElementById("playerTowerLeft"), x: 20, y: 80 },
-    { id: "playerTowerRight", team: "player", hp: 800, maxHp: 800, isKing: false, el: document.getElementById("playerTowerRight"), x: 80, y: 80 },
+    { id: "enemyKingTower", team: "enemy", hp: 1500, maxHp: 1500, atk: 50, range: 40, atkSpeed: 1000, lastAtkTime: 0, isKing: true, isActive: false, el: document.getElementById("enemyKingTower"), x: 50, y: 5 },
+    { id: "enemyTowerLeft", team: "enemy", hp: 800, maxHp: 800, atk: 35, range: 35, atkSpeed: 800, lastAtkTime: 0, isKing: false, isActive: true, el: document.getElementById("enemyTowerLeft"), x: 20, y: 20 },
+    { id: "enemyTowerRight", team: "enemy", hp: 800, maxHp: 800, atk: 35, range: 35, atkSpeed: 800, lastAtkTime: 0, isKing: false, isActive: true, el: document.getElementById("enemyTowerRight"), x: 80, y: 20 },
+    { id: "playerKingTower", team: "player", hp: 1500, maxHp: 1500, atk: 50, range: 40, atkSpeed: 1000, lastAtkTime: 0, isKing: true, isActive: false, el: document.getElementById("playerKingTower"), x: 50, y: 95 },
+    { id: "playerTowerLeft", team: "player", hp: 800, maxHp: 800, atk: 35, range: 35, atkSpeed: 800, lastAtkTime: 0, isKing: false, isActive: true, el: document.getElementById("playerTowerLeft"), x: 20, y: 80 },
+    { id: "playerTowerRight", team: "player", hp: 800, maxHp: 800, atk: 35, range: 35, atkSpeed: 800, lastAtkTime: 0, isKing: false, isActive: true, el: document.getElementById("playerTowerRight"), x: 80, y: 80 },
   ];
   
   // FIX: Always restore tower visibility on arena reset
@@ -912,8 +953,9 @@ document.addEventListener("pointerup", (e) => {
       const spawnYPercent = ((e.clientY - arenaRect.top) / arenaRect.height) * 100;
       const spawnXPercent = ((e.clientX - arenaRect.left) / arenaRect.width) * 100;
       
-      // Can only spawn on player side (y > 50)
-      if (spawnYPercent >= 50) {
+      const card = GAME_DATA.hand[draggedCardIndex];
+      // Can only spawn on player side (y > 50), unless it's a spell
+      if (card && (card.isSpell || spawnYPercent >= 50)) {
         spawnPlayerUnit(draggedCardIndex, spawnXPercent, spawnYPercent);
       }
     }
@@ -963,9 +1005,14 @@ function spawnPlayerUnit(handIndex, xPercent, yPercent) {
   if (GAME_DATA.playerElixir >= card.cost) {
     GAME_DATA.playerElixir -= card.cost;
     
-    createUnit(card, xPercent, yPercent, "player");
-    playCry(card.cry);
-    playEffect('deploy');
+    if (card.isSpell) {
+       castSpell(card, xPercent, yPercent, "player");
+       playEffect('deploy');
+    } else {
+       createUnit(card, xPercent, yPercent, "player");
+       playCry(card.cry);
+       playEffect('deploy');
+    }
     
     // Cycle cards back to bottom of battle deck
     GAME_DATA.battleDeck.unshift(card); // put played card backwards
@@ -1003,12 +1050,68 @@ function spawnEnemyUnit() {
       
       // Buff AI slightly in higher arenas
       const buff = 1 + (currentArenaIdx * 0.05);
-      card.hp = Math.floor(card.hp * buff);
-      card.atk = Math.floor(card.atk * buff);
+      card.hp = Math.floor((card.hp || 0) * buff);
+      card.atk = Math.floor((card.atk || 0) * buff);
       
-      createUnit(card, xPercent, yPercent, "enemy");
+      if (card.isSpell) {
+         // Auto aim near player tower roughly
+         const tx = Math.random() < 0.5 ? 20 : 80;
+         castSpell(card, tx + (Math.random()*10 - 5), 80, "enemy");
+      } else {
+         createUnit(card, xPercent, yPercent, "enemy");
+      }
     }
   }
+}
+
+function castSpell(spell, x, y, team) {
+  const arenaRect = document.getElementById("arena").getBoundingClientRect();
+  const effectEl = document.createElement("div");
+  effectEl.className = `spell-effect rarity-${spell.rarity.toLowerCase()}`;
+  effectEl.style.left = `${x}%`;
+  effectEl.style.top = `${y}%`;
+
+  // Assume aspect ratio tall (e.g., width is smaller). We make a circle
+  const widthPx = arenaRect.width * (spell.radius / 100) * 2;
+  effectEl.style.width = `${widthPx}px`;
+  effectEl.style.height = `${widthPx}px`;
+  
+  effectEl.innerHTML = `<img src="${spell.effectSprite}" />`;
+  document.getElementById("unitsContainer").appendChild(effectEl);
+  
+  setTimeout(() => effectEl.remove(), 600);
+  
+  // Instant AoE Damage Impact
+  setTimeout(() => {
+    // Damage units
+    GAME_DATA.units.forEach(u => {
+      if (u.team !== team && u.hp > 0) {
+        if (Math.hypot(u.x - x, u.y - y) <= spell.radius) {
+           let dmg = spell.atk;
+           if (u.types && spell.types) {
+             dmg = Math.floor(dmg * getDamageMultiplier(spell.types, u.types));
+           }
+           u.hp -= dmg;
+           u.el.style.transform = `translate(-50%, -50%) scale(1.3) rotate(5deg)`;
+           setTimeout(() => { if(u.el) u.el.style.transform = `translate(-50%, -50%) scale(1)`; }, 100);
+        }
+      }
+    });
+
+    // Damage towers (Reduced damage)
+    GAME_DATA.towers.forEach(t => {
+      if (t.team !== team && t.hp > 0 && t.isActive) {
+        if (Math.hypot(t.x - x, t.y - y) <= spell.radius + 5) {
+           t.hp -= Math.floor(spell.atk * 0.4);
+           if (t.isKing) t.isActive = true;
+           
+           t.el.style.transform = `translate(-50%, -50%) scale(1.1) rotate(-5deg)`;
+           setTimeout(() => { if (t.el) t.el.style.transform = `translate(-50%, -50%) scale(1)`; }, 100);
+        }
+      }
+    });
+    updateTowersUI();
+  }, 200);
 }
 
 function createUnit(model, x, y, team) {
@@ -1046,6 +1149,52 @@ function createUnit(model, x, y, team) {
     unitEl.querySelector("img").style.filter += " drop-shadow(0 0 8px #facc15)";
     unitEl.classList.add("legendary-aura");
   }
+}
+
+// Type Advantage System
+const TYPE_CHART = {
+  normal: { weakTo: ['fighting'], resistantTo: [], immuneTo: ['ghost'] },
+  fire: { weakTo: ['water', 'ground', 'rock'], resistantTo: ['fire', 'grass', 'ice', 'bug', 'steel', 'fairy'], immuneTo: [] },
+  water: { weakTo: ['electric', 'grass'], resistantTo: ['fire', 'water', 'ice', 'steel'], immuneTo: [] },
+  electric: { weakTo: ['ground'], resistantTo: ['electric', 'flying', 'steel'], immuneTo: [] },
+  grass: { weakTo: ['fire', 'ice', 'poison', 'flying', 'bug'], resistantTo: ['water', 'electric', 'grass', 'ground'], immuneTo: [] },
+  ice: { weakTo: ['fire', 'fighting', 'rock', 'steel'], resistantTo: ['ice'], immuneTo: [] },
+  fighting: { weakTo: ['flying', 'psychic', 'fairy'], resistantTo: ['bug', 'rock', 'dark'], immuneTo: [] },
+  poison: { weakTo: ['ground', 'psychic'], resistantTo: ['grass', 'fighting', 'poison', 'bug', 'fairy'], immuneTo: [] },
+  ground: { weakTo: ['water', 'grass', 'ice'], resistantTo: ['poison', 'rock'], immuneTo: ['electric'] },
+  flying: { weakTo: ['electric', 'ice', 'rock'], resistantTo: ['grass', 'fighting', 'bug'], immuneTo: ['ground'] },
+  psychic: { weakTo: ['bug', 'ghost', 'dark'], resistantTo: ['fighting', 'psychic'], immuneTo: [] },
+  bug: { weakTo: ['fire', 'flying', 'rock'], resistantTo: ['grass', 'fighting', 'ground'], immuneTo: [] },
+  rock: { weakTo: ['water', 'grass', 'fighting', 'ground', 'steel'], resistantTo: ['normal', 'fire', 'poison', 'flying'], immuneTo: [] },
+  ghost: { weakTo: ['ghost', 'dark'], resistantTo: ['poison', 'bug'], immuneTo: ['normal', 'fighting'] },
+  dragon: { weakTo: ['ice', 'dragon', 'fairy'], resistantTo: ['fire', 'water', 'electric', 'grass'], immuneTo: [] },
+  dark: { weakTo: ['fighting', 'bug', 'fairy'], resistantTo: ['ghost', 'dark'], immuneTo: ['psychic'] },
+  steel: { weakTo: ['fire', 'fighting', 'ground'], resistantTo: ['normal', 'grass', 'ice', 'flying', 'psychic', 'bug', 'rock', 'dragon', 'steel', 'fairy'], immuneTo: ['poison'] },
+  fairy: { weakTo: ['poison', 'steel'], resistantTo: ['fighting', 'bug', 'dark'], immuneTo: ['dragon'] }
+};
+
+function getDamageMultiplier(attackerTypes, defenderTypes) {
+  if (!attackerTypes || !defenderTypes || attackerTypes.length === 0 || defenderTypes.length === 0) return 1.0;
+  
+  let totalMultiplier = 1.0;
+  
+  // We use the first type of the attacker for simplicity
+  const atkType = attackerTypes[0].toLowerCase();
+  
+  for (const defType of defenderTypes) {
+    const defData = TYPE_CHART[defType.toLowerCase()];
+    if (!defData) continue;
+    
+    if (defData.immuneTo.includes(atkType)) {
+      totalMultiplier *= 0.0;
+    } else if (defData.weakTo.includes(atkType)) {
+      totalMultiplier *= 1.5; // Super Effective (1.5x damage in our balanced version)
+    } else if (defData.resistantTo.includes(atkType)) {
+      totalMultiplier *= 0.5; // NOT Very Effective (0.5x damage)
+    }
+  }
+  
+  return totalMultiplier;
 }
 
 // Game Loop
@@ -1086,7 +1235,8 @@ function update(time) {
     
     // Target Units first
     activeEnemies.forEach(e => {
-      const d = Math.hypot(e.x - u.x, e.y - u.y);
+      // Normalize Y distance by aspect ratio for uniform circular detection
+      const d = Math.hypot(e.x - u.x, (e.y - u.y) * (arenaRect.height / arenaRect.width));
       if (d < closestDist) {
         closestDist = d;
         target = { type: 'unit', ref: e, x: e.x, y: e.y };
@@ -1095,7 +1245,7 @@ function update(time) {
     
     // Then Towers if no closer units (or give towers slightly lower priority)
     activeTowers.forEach(t => {
-      const dist = Math.hypot(t.x - u.x, t.y - u.y);
+      const dist = Math.hypot(t.x - u.x, (t.y - u.y) * (arenaRect.height / arenaRect.width));
       // Give towers a little less priority (dist * 1.2) to make units fight each other first
       if (dist * 1.2 < closestDist) {
         closestDist = dist * 1.2;
@@ -1104,11 +1254,12 @@ function update(time) {
     });
     
     u.target = target;
-    
+    let vx = 0, vy = 0;
     if (target) {
-      const actualDist = Math.hypot(target.x - u.x, target.y - u.y);
-      // Roughly 5% arena width = range
-      const rangePercent = u.range * pxRatioY; 
+      const dyNorm = (target.y - u.y) * (arenaRect.height / arenaRect.width);
+      const actualDist = Math.hypot(target.x - u.x, dyNorm);
+      // Convert pixel range to arena-width-percentage
+      const rangePercent = u.range * pxRatioX; 
       
       if (actualDist > rangePercent) {
         // Bridge-aware pathfinding: route units through bridges, never across water
@@ -1116,37 +1267,92 @@ function update(time) {
         if (moveTarget) {
           const angle = Math.atan2(moveTarget.y - u.y, moveTarget.x - u.x);
           const moveSpeed = (2 + u.speed * 0.05) * dt;
-
-          const newX = u.x + Math.cos(angle) * moveSpeed;
-          const newY = u.y + Math.sin(angle) * moveSpeed * (arenaRect.width / arenaRect.height);
-
-          // River collision guard: block Y movement into river water off-bridge
-          const wouldEnterRiver = newY >= RIVER_ZONE.top && newY <= RIVER_ZONE.bottom;
-          if (wouldEnterRiver && !isOnBridge(newX)) {
-            u.x = newX; // allow horizontal slide toward bridge
-            // u.y stays — blocked by water
-          } else {
-            u.x = newX;
-            u.y = newY;
-          }
+          
+          vx = Math.cos(angle) * moveSpeed;
+          vy = Math.sin(angle) * moveSpeed * (arenaRect.width / arenaRect.height);
         }
       } else {
-        // Attack
-        if (time - u.lastAtkTime > u.atkSpeed) {
-          u.lastAtkTime = time;
-          target.ref.hp -= u.atk;
-          
-          // Small bump animation
-          u.el.style.transform = `translate(-50%, -50%) scale(1.2)`;
-          setTimeout(() => { if (u.el) u.el.style.transform = `translate(-50%, -50%) scale(1)`; }, 100);
-          
-          if (target.type === 'tower') updateTowersUI();
-          
-          // Check win condition
-          if (target.type === 'tower' && target.ref.isKing && target.ref.hp <= 0) {
-            endGame(u.team === 'player');
+          // Attack logic
+          if (time - u.lastAtkTime > u.atkSpeed) {
+            u.lastAtkTime = time;
+            
+            // Melee vs Ranged
+            if (u.range > 35) {
+              spawnProjectile({
+                x: u.x, y: u.y,
+                target: target.ref,
+                damage: u.atk,
+                team: u.team,
+                speed: 150,
+                type: u.types ? u.types[0] : 'energy',
+                attackerTypes: u.types
+              });
+            } else {
+              let damage = u.atk;
+              if (target.type === 'unit' && u.types && target.ref.types) {
+                 const multiplier = getDamageMultiplier(u.types, target.ref.types);
+                 damage = Math.floor(damage * multiplier);
+              }
+              target.ref.hp -= damage;
+              
+              if (target.type === 'tower') updateTowersUI();
+              
+              if (target.type === 'tower' && target.ref.isKing && target.ref.hp <= 0) {
+                endGame(u.team === 'player');
+              }
+            }
+
+            u.el.style.transform = `translate(-50%, -50%) scale(1.2)`;
+            setTimeout(() => { if (u.el) u.el.style.transform = `translate(-50%, -50%) scale(1)`; }, 100);
           }
         }
+      }
+
+    // --- Separation / Collision Avoidance ---
+    let sepX = 0, sepY = 0;
+    const sepRadius = 4.5; // Radius in normalized units
+    
+    GAME_DATA.units.forEach(other => {
+      if (other === u || other.hp <= 0) return;
+      const dx = u.x - other.x;
+      const dy = (u.y - other.y) * (arenaRect.height / arenaRect.width);
+      const d = Math.hypot(dx, dy);
+      if (d < sepRadius && d > 0) {
+        const force = (sepRadius - d) / sepRadius;
+        sepX += (dx / d) * force;
+        sepY += (dy / d) * force;
+      }
+    });
+
+    // Avoid tower bases
+    GAME_DATA.towers.forEach(t => {
+      if (t.hp <= 0) return;
+      const dx = u.x - t.x;
+      const dy = (u.y - t.y) * (arenaRect.height / arenaRect.width);
+      const d = Math.hypot(dx, dy);
+      if (d < 6 && d > 0) {
+        const force = (6 - d) / 6;
+        sepX += (dx / d) * force;
+        sepY += (dy / d) * force;
+      }
+    });
+
+    // Apply combined velocity
+    vx += sepX * 12 * dt;
+    vy += (sepY * 12 * dt) * (arenaRect.width / arenaRect.height);
+
+    if (Math.abs(vx) > 0.001 || Math.abs(vy) > 0.001) {
+      const newX = u.x + vx;
+      const newY = u.y + vy;
+
+      // River collision guard
+      const wouldEnterRiver = newY >= RIVER_ZONE.top && newY <= RIVER_ZONE.bottom;
+      if (wouldEnterRiver && !isOnBridge(newX)) {
+        u.x = newX; // Allow sliding horizontally
+        // u.y remains same
+      } else {
+        u.x = newX;
+        u.y = newY;
       }
     }
     
@@ -1163,6 +1369,56 @@ function update(time) {
     u.el.querySelector(".hp-fill").style.width = `${Math.max(0, fillPos)}%`;
   });
   
+  // Towers AI
+  GAME_DATA.towers.forEach(t => {
+    if (t.hp <= 0 || !t.isActive) return;
+
+    let activeEnemies = GAME_DATA.units.filter(e => e.hp > 0 && e.team !== t.team);
+    let closestDist = Infinity;
+    let target = null;
+
+    activeEnemies.forEach(e => {
+      const d = Math.hypot(e.x - t.x, e.y - t.y);
+      if (d < closestDist) {
+        closestDist = d;
+        target = e;
+      }
+    });
+
+    // Check if target is in range
+    const rangePercent = t.range * pxRatioY; 
+    if (target && closestDist <= rangePercent) {
+      if (time - t.lastAtkTime > t.atkSpeed) {
+        t.lastAtkTime = time;
+        
+        // Spawn Tower Projectile
+        spawnProjectile({
+          x: t.x, y: t.y,
+          target: target,
+          damage: t.atk,
+          team: t.team,
+          speed: 120,
+          type: 'energy'
+        });
+
+        // Visual feedback for tower attack
+        t.el.style.transform = `translate(-50%, -50%) scale(1.1)`;
+        setTimeout(() => { if (t.el) t.el.style.transform = `translate(-50%, -50%) scale(1)`; }, 100);
+      }
+    }
+  });
+
+  // Check if a side tower died to activate the King tower
+  GAME_DATA.towers.forEach(t => {
+     if (t.isKing && !t.isActive) {
+        // Find if any side tower of the same team is dead
+        const sideTowersDead = GAME_DATA.towers.some(st => !st.isKing && st.team === t.team && st.hp <= 0);
+        if (sideTowersDead) {
+           t.isActive = true; // Wake up King Tower
+        }
+     }
+  });
+  
   // Cleanup dead units
   for (let i = GAME_DATA.units.length - 1; i >= 0; i--) {
     if (GAME_DATA.units[i].hp <= 0) {
@@ -1170,6 +1426,8 @@ function update(time) {
       GAME_DATA.units.splice(i, 1);
     }
   }
+
+  updateProjectiles(dt);
   
   requestAnimationFrame(update);
 }
@@ -1297,6 +1555,10 @@ function resetBattleState() {
   GAME_DATA.matchTime = 180;
   GAME_DATA.elixirRegenRate = 0.35;
   
+  // Clear projectiles
+  GAME_DATA.projectiles.forEach(p => p.el.remove());
+  GAME_DATA.projectiles = [];
+  
   // Reset timer display color
   document.getElementById('matchTimer').style.color = '';
   document.getElementById('matchTimer').innerText = '3:00';
@@ -1327,6 +1589,75 @@ function initGame() {
   GAME_DATA.lastFrameTime = performance.now();
   GAME_DATA.gameOver = false; // ensure set after reset
   requestAnimationFrame(update);
+}
+
+function spawnProjectile(config) {
+  const container = document.getElementById("unitsContainer");
+  const el = document.createElement("div");
+  el.className = `projectile ${config.team} type-${config.type || 'energy'}`;
+  el.style.left = `${config.x}%`;
+  el.style.top = `${config.y}%`;
+  container.appendChild(el);
+
+  GAME_DATA.projectiles.push({
+    ...config,
+    el: el
+  });
+}
+
+function updateProjectiles(dt) {
+  const arenaRect = document.getElementById("arena").getBoundingClientRect();
+  
+  for (let i = GAME_DATA.projectiles.length - 1; i >= 0; i--) {
+    const p = GAME_DATA.projectiles[i];
+    
+    // Projectiles follow moving targets
+    const target = p.target;
+    if (!target || target.hp <= 0) {
+      p.el.remove();
+      GAME_DATA.projectiles.splice(i, 1);
+      continue;
+    }
+
+    const dx = target.x - p.x;
+    const dy = (target.y - p.y) * (arenaRect.height / arenaRect.width);
+    const dist = Math.hypot(dx, dy);
+
+    if (dist < 3) {
+      // Impact
+      let finalDmg = p.damage;
+      if (p.attackerTypes && target.types) {
+        finalDmg = Math.floor(finalDmg * getDamageMultiplier(p.attackerTypes, target.types));
+      }
+      target.hp -= finalDmg;
+      
+      // Visual impact
+      if (target.el) {
+        target.el.style.filter += " brightness(2)";
+        setTimeout(() => { if(target.el) target.el.style.filter = target.el.style.filter.replace(" brightness(2)", ""); }, 50);
+      }
+
+      p.el.remove();
+      GAME_DATA.projectiles.splice(i, 1);
+      
+      // Update towers if target was a tower
+      if (GAME_DATA.towers.includes(target)) {
+        updateTowersUI();
+        if (target.isKing && target.hp <= 0) endGame(p.team === 'player');
+      }
+      continue;
+    }
+
+    const moveDist = p.speed * dt;
+    const angle = Math.atan2(target.y - p.y, target.x - p.x);
+    
+    p.x += Math.cos(angle) * moveDist;
+    p.y += Math.sin(angle) * moveDist * (arenaRect.width / arenaRect.height);
+
+    p.el.style.left = `${p.x}%`;
+    p.el.style.top = `${p.y}%`;
+    p.el.style.transform = `translate(-50%, -50%) rotate(${angle}rad)`;
+  }
 }
 
 // Start
