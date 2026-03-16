@@ -263,11 +263,11 @@ function handleRemoteTowerHp(data) {
 }
 
 const ARENAS = [
-  { name: "Arena da Cidade de Pallet", minTrophies: 0, bg: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/locations/1.png", badgeImg: null },
-  { name: "Arena da Cidade de Pewter", minTrophies: 100, bg: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/locations/2.png", badgeImg: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/boulder-badge.png", badgeName: "Insígnia da Rocha" },
-  { name: "Arena da Cidade de Cerulean", minTrophies: 200, bg: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/locations/3.png", badgeImg: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/cascade-badge.png", badgeName: "Insígnia da Cascata" },
-  { name: "Arena da Cidade de Vermilion", minTrophies: 300, bg: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/locations/4.png", badgeImg: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/thunder-badge.png", badgeName: "Insígnia do Trovão" },
-  { name: "Arena da Cidade de Celadon", minTrophies: 400, bg: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/locations/5.png", badgeImg: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rainbow-badge.png", badgeName: "Insígnia do Arco-Íris" }
+  { name: "Arena da Cidade de Pallet",   minTrophies: 0,   bg: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/locations/1.png", badgeImg: null },
+  { name: "Arena da Cidade de Pewter",   minTrophies: 100, bg: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/locations/2.png", badgeImg: "https://archives.bulbagarden.net/media/upload/b/b2/Boulder_Badge.png",  badgeName: "Insígnia da Rocha" },
+  { name: "Arena da Cidade de Cerulean", minTrophies: 200, bg: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/locations/3.png", badgeImg: "https://archives.bulbagarden.net/media/upload/d/d4/Cascade_Badge.png",  badgeName: "Insígnia da Cascata" },
+  { name: "Arena da Cidade de Vermilion",minTrophies: 300, bg: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/locations/4.png", badgeImg: "https://archives.bulbagarden.net/media/upload/e/ec/Thunder_Badge.png",  badgeName: "Insígnia do Trovão" },
+  { name: "Arena da Cidade de Celadon",  minTrophies: 400, bg: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/locations/5.png", badgeImg: "https://archives.bulbagarden.net/media/upload/c/cb/Rainbow_Badge.png",  badgeName: "Insígnia do Arco-Íris" }
 ];
 
 // --- River & Bridge Physics ---
