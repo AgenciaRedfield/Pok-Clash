@@ -25,8 +25,51 @@
     <link rel="stylesheet" href="/src/style.css">
   </head>
   <body>
+    <!-- Landing Page (Home) -->
+    <div id="landingPage">
+      <div class="landing-content">
+        <header class="landing-header">
+          <img src="/logo.png" alt="PokéClash Logo" class="landing-logo-img" />
+          <h1>POKÉCLASH ROYAL</h1>
+          <p class="tagline">O Próximo Nível das Batalhas Pokémon</p>
+        </header>
+
+        <section class="landing-features">
+          <div class="feature-card">
+            <i class="fas fa-bolt"></i>
+            <h3>Combate Instantâneo</h3>
+            <p>Batalhas 1v1 dinâmicas com sistema de projéteis e dano em área.</p>
+          </div>
+          <div class="feature-card">
+            <i class="fas fa-dragon"></i>
+            <h3>Coleção Épica</h3>
+            <p>Mais de 40 Pokémon com raridades Comum, Épica e Lendária.</p>
+          </div>
+          <div class="feature-card">
+            <i class="fas fa-trophy"></i>
+            <h3>Ligas e Arenas</h3>
+            <p>Suba de nível, ganhe troféus e domine todas as 5 Arenas clássicas.</p>
+          </div>
+        </section>
+
+        <div class="landing-actions">
+          <button id="btnPlayNow" class="primary-btn">
+            <i class="fas fa-play"></i> JOGAR AGORA
+          </button>
+          <p class="beta-tag">BETA v1.5 - Elementals & Splash</p>
+        </div>
+      </div>
+      
+      <div class="landing-footer">
+        <div class="news-ticker">
+           <span><i class="fas fa-bullhorn"></i> NOVIDADES: Sistema de Tipos Elementais ativado!</span>
+           <span><i class="fas fa-star"></i> UPDATE: Dano em Área para Lendários disponível.</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Splash Screen -->
-    <div id="splashScreen">
+    <div id="splashScreen" style="display: none;">
       <img id="splashLogo" src="/logo.png" alt="PokéClash Logo" />
       <div class="splash-loader">
         <div class="splash-loader-bar"></div>
@@ -90,6 +133,23 @@
            <div class="chest-slot" data-slot="1">Vazio</div>
            <div class="chest-slot" data-slot="2">Vazio</div>
            <div class="chest-slot" data-slot="3">Vazio</div>
+        </div>
+
+        <!-- Updates / News Section -->
+        <div class="updates-section">
+           <h4>🚀 NOVIDADES & ATUALIZAÇÕES</h4>
+           <div class="update-item">
+              <span class="update-tag new">NOVO</span>
+              <p><strong>Versão 1.5:</strong> Sistema de Projéteis e Dano em Área (Splash) implementado!</p>
+           </div>
+           <div class="update-item">
+              <span class="update-tag balance">AJUSTE</span>
+              <p>IA da Arena 0 está mais amigável para novos treinadores.</p>
+           </div>
+           <div class="update-item">
+              <span class="update-tag fix">FIX</span>
+              <p>Corrigido bug de colisão entre tropas no rio.</p>
+           </div>
         </div>
       </div>
 

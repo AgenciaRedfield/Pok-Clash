@@ -7,12 +7,15 @@ Um jogo de batalha tática em tempo real inspirado em Clash Royale e focado no u
 ## ✨ Funcionalidades
 
 - **Batalhas em Tempo Real**: Posicione seus Pokémon na arena para derrubar as torres do oponente.
-- **Sistema de Deck**: Monte sua estratégia com 8 cartas escolhidas da sua coleção.
-- **Raridades Dinâmicas**: Pokémon Comuns, Épicos e Lendários com atributos e efeitos visuais únicos.
-- **Progressão do Treinador**: Ganhe XP, suba de nível e conquiste Insígnias através de 5 Arenas clássicas.
-- **Loja de Cartas**: Ofertas diárias e baús especiais para expandir sua coleção.
-- **Sistema de Evolução**: Melhore seus Pokémon usando Moedas e Doces para aumentar seu HP e Ataque.
-- **Trilha Sonora Imersiva**: Música ambiente e sons de efeitos de batalha.
+- **Sistema de Projéteis**: Pokémon com tipos elementares (Fogo, Água, etc.) agora atacam à distância com projéteis visuais e mecânicas de trajetória.
+- **Dano em Área (Splash)**: Pokémon Épicos, Lendários ou de tipos específicos (Fogo, Dragão, Pedra) causam dano em área, ideal para limpar hordas.
+- **Vantagem de Tipos**: Sistema de fraquezas e resistências clássico de Pokémon integrado ao dano (ex: Água > Fogo).
+- **Sistema de "Juice" & VFX**: Screen shake (tremor de tela), Impact Flash, e Floating Combat Text (números de dano flutuantes) para uma experiência visceral.
+- **Física de Tropas**: Sistema de anti-colisão e agrupamento que impede que unidades se sobreponham, garantindo uma formação de batalha natural.
+- **Deploy Automático**: Tempo de invocação de 1 segundo com feedback visual (unidades desbotadas) antes de entrarem na ação.
+- **Sistema de Deck & Evolução**: Monte um deck de 8 cartas e evolua seus Pokémon usando Moedas e Doces da PokéAPI.
+- **Progressão do Treinador**: Conquiste 5 Arenas/Ligas, ganhe Insígnias e suba de nível para desbloquear bônus.
+- **Dificuldade Balanceada**: Curva de aprendizado suave com IA facilitada para iniciantes na primeira Arena.
 
 ## 🛠️ Tecnologias Utilizadas
 

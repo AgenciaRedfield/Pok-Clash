@@ -17,7 +17,137 @@
   box-sizing: border-box;
   font-family: 'Outfit', sans-serif;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
+
+#landingPage {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(circle at top, #1e3a8a, #0f172a);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+  overflow-y: auto;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+.landing-content {
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+}
+
+.landing-header h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  color: #fbbf24;
+  text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  margin: 10px 0;
+}
+
+.landing-logo-img {
+  width: 120px;
+  filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.4));
+  animation: float 3s ease-in-out infinite;
+}
+
+.landing-features {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+  margin: 40px 0;
+}
+
+.feature-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  transition: transform 0.3s;
+}
+
+.feature-card i {
+  font-size: 1.5rem;
+  color: #60a5fa;
+}
+
+.landing-actions {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  border: none;
+  padding: 18px 40px;
+  border-radius: 50px;
+  color: white;
+  font-weight: 800;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3), inset 0 2px 5px rgba(255,255,255,0.3);
+  transition: transform 0.2s, background 0.2s;
+}
+
+.primary-btn:active { transform: scale(0.95); }
+
+.beta-tag { font-size: 0.8rem; color: #94a3b8; }
+
+.landing-footer {
+  width: 100%;
+  background: rgba(0,0,0,0.4);
+  padding: 15px 0;
+  margin-top: auto;
+  overflow: hidden;
+}
+
+.news-ticker {
+  white-space: nowrap;
+  animation: ticker 15s linear infinite;
+  display: flex;
+  gap: 50px;
+}
+
+@keyframes ticker {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Updates System Style */
+.updates-section {
+  margin-top: 15px;
+  background: rgba(0,0,0,0.1);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: left;
+}
+
+.updates-section h4 { font-size: 0.9rem; margin-bottom: 8px; color: #fbbf24; }
+.update-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: 0.8rem; }
+.update-tag {
+  font-size: 0.6rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+  color: #fff;
+}
+.update-tag.new { background: #22c55e; }
+.update-tag.balance { background: #3b82f6; }
+.update-tag.fix { background: #f43f5e; }
 
 body {
   background-color: var(--bg-dark);
@@ -1302,6 +1432,12 @@ body {
   filter: drop-shadow(0 4px 4px rgba(0,0,0,0.4));
 }
 
+.unit.deploying {
+  opacity: 0.5;
+  filter: grayscale(1);
+  transition: opacity 0.5s, filter 0.5s;
+}
+
 .unit .hp-bar {
   top: -10px;
   width: 30px;
@@ -1758,4 +1894,24 @@ body {
   transform: translate(-100%, -50%);
   opacity: 0.5;
   border-radius: 50%;
+}
+
+/* Splash Effects */
+.splash-hint {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 15;
+  background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%);
+  animation: splash-pop 0.4s ease-out forwards;
+}
+
+.splash-hint.type-fire { background: radial-gradient(circle, rgba(249, 115, 22, 0.4) 0%, transparent 70%); }
+.splash-hint.type-dragon { background: radial-gradient(circle, rgba(236, 72, 153, 0.4) 0%, transparent 70%); }
+.splash-hint.type-rock { background: radial-gradient(circle, rgba(168, 162, 158, 0.4) 0%, transparent 70%); }
+
+@keyframes splash-pop {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0.8; }
+  100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
 }

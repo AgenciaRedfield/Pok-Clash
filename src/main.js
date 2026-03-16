@@ -435,7 +435,8 @@ async function startDataFetch() {
             cost: cost,
             level: 1,
             rarity: rarity,
-            types: unitTypes
+            types: unitTypes,
+            splashRadius: (['fire', 'dragon', 'rock'].some(t => unitTypes.includes(t)) || bst > 480) ? 8 : 0
           };
         })
     );
@@ -1000,6 +1001,29 @@ function playMusic() {
   bgmElement.play().catch(e => console.log('Music blocked by browser policy', e));
 }
 
+// --- Home / Landing Logic ---
+document.getElementById("btnPlayNow").addEventListener("click", () => {
+    document.getElementById("landingPage").style.display = "none";
+    
+    if (loadGame()) {
+      // If user had a game, show splash then menu
+      document.getElementById("splashScreen").style.display = "flex";
+      setTimeout(() => {
+        document.getElementById("splashScreen").style.display = "none";
+        document.getElementById("mainMenu").style.display = "flex";
+        initMainMenu();
+      }, 2000);
+    } else {
+      // First time, show splash then loading/setup
+      document.getElementById("splashScreen").style.display = "flex";
+      setTimeout(() => {
+        document.getElementById("splashScreen").style.display = "none";
+        document.getElementById("loadingScreen").style.display = "flex";
+        startDataFetch();
+      }, 2000);
+    }
+});
+
 function spawnPlayerUnit(handIndex, xPercent, yPercent) {
   const card = GAME_DATA.hand[handIndex];
   if (GAME_DATA.playerElixir >= card.cost) {
@@ -1031,8 +1055,8 @@ function spawnEnemyUnit() {
   const currentArenaIdx = getCurrentArenaIndex();
   
   // AI difficulty scaling
-  const minElixirNeeded = Math.max(4, 9 - currentArenaIdx); 
-  const spawnFrequency = 0.03 + (currentArenaIdx * 0.02); // higher arenas spawn more often
+  const minElixirNeeded = Math.max(5, 10 - currentArenaIdx); // AI waits more at start
+  const spawnFrequency = 0.015 + (currentArenaIdx * 0.015); // Much lower frequency at start (from 0.03)
   
   if (GAME_DATA.enemyElixir >= minElixirNeeded && Math.random() < spawnFrequency) {
     // Filter cards by rarity/strength appropriate for arena
@@ -1050,8 +1074,8 @@ function spawnEnemyUnit() {
       const xPercent = 10 + Math.random() * 80;
       const yPercent = 10 + Math.random() * 30;
       
-      // Buff AI slightly in higher arenas
-      const buff = 1 + (currentArenaIdx * 0.05);
+      // Buff AI slightly in higher arenas, NERF in Arena 0/1
+      const buff = (currentArenaIdx === 0) ? 0.85 : (1 + (currentArenaIdx * 0.05));
       card.hp = Math.floor((card.hp || 0) * buff);
       card.atk = Math.floor((card.atk || 0) * buff);
       
@@ -1145,8 +1169,12 @@ function createUnit(model, x, y, team) {
     atk: currentAtk,
     x, y, team, el: unitEl, lastAtkTime: 0,
     target: null,
-    rarity: model.rarity || "Comum"
+    rarity: model.rarity || "Comum",
+    isDeploying: true,
+    deployTimer: 1000 // 1 second delay
   });
+  
+  unitEl.classList.add("deploying");
   
   // Add rarity effects to unit sprite
   if (model.rarity === "Épica") {
@@ -1231,6 +1259,16 @@ function update(time) {
   
   GAME_DATA.units.forEach((u, index) => {
     if (u.hp <= 0) return;
+
+    // --- STEP 4: Deploy Logic ---
+    if (u.isDeploying) {
+      u.deployTimer -= (dt * 1000);
+      if (u.deployTimer <= 0) {
+        u.isDeploying = false;
+        u.el.classList.remove("deploying");
+      }
+      return; // Skip AI/Movement while deploying
+    }
     
     // Find target
     let activeTowers = GAME_DATA.towers.filter(t => t.hp > 0 && t.team !== u.team);
@@ -1291,24 +1329,48 @@ function update(time) {
                 team: u.team,
                 speed: 150,
                 type: u.types ? u.types[0] : 'energy',
-                attackerTypes: u.types
+                attackerTypes: u.types,
+                splashRadius: u.splashRadius || 0
               });
             } else {
               let damage = u.atk;
+              let isEffective = 1.0;
               if (target.type === 'unit' && u.types && target.ref.types) {
-                 const multiplier = getDamageMultiplier(u.types, target.ref.types);
-                 damage = Math.floor(damage * multiplier);
-              }
-              target.ref.hp -= damage;
-              
-              // Juice
-              showFloatingText(target.ref.x, target.ref.y, `-${damage}`, 'normal');
-              if (target.ref.el) {
-                target.ref.el.style.filter = "brightness(3) saturate(2)";
-                setTimeout(() => { if(target.ref.el) target.ref.el.style.filter = ""; }, 60);
+                 isEffective = getDamageMultiplier(u.types, target.ref.types);
+                 damage = Math.floor(damage * isEffective);
               }
 
-              if (target.type === 'tower') {
+              if (u.splashRadius) {
+                 // Splash Melee
+                 const ratio = arenaRect.height / arenaRect.width;
+                 const affectedUnits = GAME_DATA.units.filter(en => en.team !== u.team && en.hp > 0 && Math.hypot(en.x - target.ref.x, (en.y - target.ref.y) * ratio) <= u.splashRadius);
+                 affectedUnits.forEach(en => {
+                    let d = u.atk;
+                    if (en.types) d = Math.floor(d * getDamageMultiplier(u.types, en.types));
+                    en.hp -= d;
+                    showFloatingText(en.x, en.y, `-${d}`, 'normal');
+                    if (en.el) {
+                       en.el.style.filter = "brightness(3) saturate(2)";
+                       setTimeout(() => { if(en.el) en.el.style.filter = ""; }, 60);
+                    }
+                 });
+                 // Also towers in splash? Usually yes in Clash Royale splash
+                 const affectedTowers = GAME_DATA.towers.filter(t => t.team !== u.team && t.hp > 0 && Math.hypot(t.x - target.ref.x, (t.y - target.ref.y) * ratio) <= u.splashRadius);
+                 affectedTowers.forEach(t => {
+                    t.hp -= u.atk;
+                    applyScreenShake(2);
+                 });
+                 updateTowersUI();
+              } else {
+                 target.ref.hp -= damage;
+                 showFloatingText(target.ref.x, target.ref.y, `-${damage}`, 'normal');
+                 if (target.ref.el) {
+                   target.ref.el.style.filter = "brightness(3) saturate(2)";
+                   setTimeout(() => { if(target.ref.el) target.ref.el.style.filter = ""; }, 60);
+                 }
+              }
+              
+              if (target.type === 'tower' && !u.splashRadius) {
                 updateTowersUI();
                 applyScreenShake(2);
               }
@@ -1566,7 +1628,7 @@ function resetBattleState() {
   document.getElementById('unitsContainer').innerHTML = '';
   
   // Reset battle variables
-  GAME_DATA.playerElixir = 5;
+  GAME_DATA.playerElixir = 7; // Start with more elixir (Easy mode)
   GAME_DATA.enemyElixir = 5;
   GAME_DATA.gameOver = false;
   GAME_DATA.matchTime = 180;
@@ -1642,38 +1704,69 @@ function updateProjectiles(dt) {
 
     if (dist < 3) {
       // Impact
-      let finalDmg = p.damage;
-      let isEffective = 1.0;
-      if (p.attackerTypes && target.types) {
-        isEffective = getDamageMultiplier(p.attackerTypes, target.types);
-        finalDmg = Math.floor(finalDmg * isEffective);
-      }
-      target.hp -= finalDmg;
+      const ratio = arenaRect.height / arenaRect.width;
       
-      // Juice: Floating Text
-      let textType = 'normal';
-      let displayText = `-${finalDmg}`;
-      if (isEffective > 1.1) { textType = 'effective'; displayText = `CRÍTICO\n-${finalDmg}`; applyScreenShake(2); }
-      if (isEffective < 0.9 && isEffective > 0.1) { textType = 'not-effective'; }
-      if (isEffective === 0) { textType = 'immune'; displayText = 'IMUNE'; }
-      
-      showFloatingText(target.x, target.y, displayText, textType);
+      if (p.splashRadius) {
+        // --- Splash Impact ---
+        const affectedUnits = GAME_DATA.units.filter(en => en.team !== p.team && en.hp > 0 && Math.hypot(en.x - p.x, (en.y - p.y) * ratio) <= p.splashRadius);
+        const affectedTowers = GAME_DATA.towers.filter(t => t.team !== p.team && t.hp > 0 && Math.hypot(t.x - p.x, (t.y - p.y) * ratio) <= p.splashRadius);
+        
+        affectedUnits.forEach(en => {
+          let multiplier = p.attackerTypes ? getDamageMultiplier(p.attackerTypes, en.types) : 1.0;
+          let finalDmg = Math.floor(p.damage * multiplier);
+          en.hp -= finalDmg;
+          
+          let textType = multiplier > 1.1 ? 'effective' : (multiplier < 0.9 ? 'not-effective' : 'normal');
+          showFloatingText(en.x, en.y, `-${finalDmg}`, textType);
+          
+          if (en.el) {
+            en.el.style.filter = "brightness(3) white-balance(100%)";
+            setTimeout(() => { if(en.el) en.el.style.filter = ""; }, 60);
+          }
+        });
 
-      // Visual impact
-      if (target.el) {
-        target.el.style.filter = "brightness(3) white-balance(100%)";
-        setTimeout(() => { if(target.el) target.el.style.filter = ""; }, 60);
+        affectedTowers.forEach(t => {
+          t.hp -= Math.floor(p.damage * 0.8); // Towers take slightly less splash damage
+          updateTowersUI();
+          applyScreenShake(3);
+          if (t.isKing && t.hp <= 0) endGame(p.team === 'player');
+        });
+
+        // Small visual "explosion" hint
+        createSplashEffect(p.x, p.y, p.splashRadius, p.type);
+
+      } else {
+        // --- Single Target Impact ---
+        let finalDmg = p.damage;
+        let isEffective = 1.0;
+        if (p.attackerTypes && target.types) {
+          isEffective = getDamageMultiplier(p.attackerTypes, target.types);
+          finalDmg = Math.floor(finalDmg * isEffective);
+        }
+        target.hp -= finalDmg;
+        
+        let textType = 'normal';
+        let displayText = `-${finalDmg}`;
+        if (isEffective > 1.1) { textType = 'effective'; displayText = `CRÍTICO\n-${finalDmg}`; applyScreenShake(2); }
+        if (isEffective < 0.9 && isEffective > 0.1) { textType = 'not-effective'; }
+        if (isEffective === 0) { textType = 'immune'; displayText = 'IMUNE'; }
+        
+        showFloatingText(target.x, target.y, displayText, textType);
+
+        if (target.el) {
+          target.el.style.filter = "brightness(3) white-balance(100%)";
+          setTimeout(() => { if(target.el) target.el.style.filter = ""; }, 60);
+        }
+
+        if (GAME_DATA.towers.includes(target)) {
+          updateTowersUI();
+          applyScreenShake(3);
+          if (target.isKing && target.hp <= 0) endGame(p.team === 'player');
+        }
       }
 
       p.el.remove();
       GAME_DATA.projectiles.splice(i, 1);
-      
-      // Update towers if target was a tower
-      if (GAME_DATA.towers.includes(target)) {
-        updateTowersUI();
-        applyScreenShake(3);
-        if (target.isKing && target.hp <= 0) endGame(p.team === 'player');
-      }
       continue;
     }
 
@@ -1712,5 +1805,22 @@ function showFloatingText(x, y, text, type) {
   setTimeout(() => el.remove(), 800);
 }
 
+function createSplashEffect(x, y, radius, type) {
+  const container = document.getElementById("unitsContainer");
+  const el = document.createElement("div");
+  el.className = `splash-hint type-${type || 'energy'}`;
+  el.style.left = `${x}%`;
+  el.style.top = `${y}%`;
+  
+  // Convert percentage radius to pixel size roughly
+  const arenaRect = document.getElementById("arena").getBoundingClientRect();
+  const size = arenaRect.width * (radius / 100) * 2.5;
+  el.style.width = `${size}px`;
+  el.style.height = `${size}px`;
+  
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 400);
+}
+
 // Start
-fetchPokemonData();
+// fetchPokemonData() is now called via btnPlayNow logic
