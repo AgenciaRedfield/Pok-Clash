@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Poké Royale Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/node_modules/@fortawesome/fontawesome-free/css/all.min.css" />
+    <link rel="stylesheet" href="/src/admin.css" />
+  </head>
+  <body>
+    <div class="admin-shell">
+      <aside class="admin-sidebar">
+        <div>
+          <a class="admin-brand" href="/">
+            <img src="/poke-royale.png" alt="Poké Royale" />
+            <div>
+              <strong>Poké Royale</strong>
+              <span>Admin Control</span>
+            </div>
+          </a>
+
+          <nav class="admin-nav">
+            <button class="admin-nav-btn active" data-panel="dashboardPanel">
+              <i class="fas fa-chart-line"></i>
+              Dashboard
+            </button>
+            <button class="admin-nav-btn" data-panel="pokemonPanel">
+              <i class="fas fa-dragon"></i>
+              Pokémon
+            </button>
+            <button class="admin-nav-btn" data-panel="itemsPanel">
+              <i class="fas fa-flask"></i>
+              Itens
+            </button>
+            <button class="admin-nav-btn" data-panel="notesPanel">
+              <i class="fas fa-lightbulb"></i>
+              Sugestões
+            </button>
+          </nav>
+        </div>
+
+        <div class="sidebar-footer">
+          <p id="sessionInfo">Sessão não iniciada</p>
+          <button id="logoutBtn" class="ghost-btn" style="display: none;">
+            <i class="fas fa-sign-out-alt"></i>
+            Sair
+          </button>
+        </div>
+      </aside>
+
+      <main class="admin-main">
+        <section id="loginCard" class="login-card">
+          <div class="eyebrow">Painel Administrativo</div>
+          <h1>Gerencie o jogo sem mexer no código-fonte</h1>
+          <p>
+            Entre com uma conta autorizada no Supabase para acompanhar estatísticas
+            e cadastrar novo conteúdo.
+          </p>
+
+          <form id="loginForm" class="admin-form">
+            <label>
+              <span>E-mail</span>
+              <input id="emailInput" type="email" placeholder="admin@seudominio.com" required />
+            </label>
+            <label>
+              <span>Senha</span>
+              <input id="passwordInput" type="password" placeholder="Sua senha" required />
+            </label>
+            <button type="submit" class="primary-btn">
+              <i class="fas fa-lock-open"></i>
+              Entrar no painel
+            </button>
+          </form>
+
+          <div class="hint-box">
+            <strong>Pré-requisito:</strong>
+            crie a tabela `admin_users` com seu e-mail autorizado. O SQL de setup está em
+            `supabase/admin_panel.sql`.
+          </div>
+          <p id="authMessage" class="status-text"></p>
+        </section>
+
+        <section id="adminApp" class="admin-app" style="display: none;">
+          <header class="admin-header">
+            <div>
+              <div class="eyebrow">Visão Operacional</div>
+              <h1>Painel Admin</h1>
+            </div>
+            <button id="refreshBtn" class="ghost-btn">
+              <i class="fas fa-rotate-right"></i>
+              Atualizar dados
+            </button>
+          </header>
+
+          <section id="dashboardPanel" class="admin-panel">
+            <div class="stats-grid">
+              <article class="stat-card">
+                <span>Jogadores</span>
+                <strong id="statPlayers">0</strong>
+                <small>Perfis com progresso salvo</small>
+              </article>
+              <article class="stat-card">
+                <span>Troféus médios</span>
+                <strong id="statAvgTrophies">0</strong>
+                <small>Saúde do meta atual</small>
+              </article>
+              <article class="stat-card">
+                <span>Vitórias totais</span>
+                <strong id="statWins">0</strong>
+                <small>Somadas em todos os perfis</small>
+              </article>
+              <article class="stat-card">
+                <span>Ouro em circulação</span>
+                <strong id="statGold">0</strong>
+                <small>Economia acumulada</small>
+              </article>
+            </div>
+
+            <div class="content-grid">
+              <section class="panel-card">
+                <div class="card-head">
+                  <h2>Top jogadores</h2>
+                  <span class="pill">Ranking</span>
+                </div>
+                <div id="topPlayersList" class="list-stack"></div>
+              </section>
+
+              <section class="panel-card">
+                <div class="card-head">
+                  <h2>Indicadores rápidos</h2>
+                  <span class="pill">Meta</span>
+                </div>
+                <div id="insightsList" class="insights-list"></div>
+              </section>
+            </div>
+          </section>
+
+          <section id="pokemonPanel" class="admin-panel" style="display: none;">
+            <div class="panel-layout">
+              <section class="panel-card editor-card">
+                <div class="card-head">
+                  <h2>Novo Pokémon</h2>
+                  <span class="pill">CRUD</span>
+                </div>
+
+                <form id="pokemonForm" class="admin-form compact-form">
+                  <input id="pokemonId" type="hidden" />
+                  <div class="form-grid">
+                    <label>
+                      <span>Slug</span>
+                      <input id="pokemonSlug" type="text" placeholder="raichu-alola" required />
+                    </label>
+                    <label>
+                      <span>Nome</span>
+                      <input id="pokemonName" type="text" placeholder="Raichu de Alola" required />
+                    </label>
+                    <label>
+                      <span>Sprite frontal</span>
+                      <input id="pokemonFrontSprite" type="url" placeholder="https://..." required />
+                    </label>
+                    <label>
+                      <span>Sprite traseiro</span>
+                      <input id="pokemonBackSprite" type="url" placeholder="https://..." />
+                    </label>
+                    <label>
+                      <span>Cry URL</span>
+                      <input id="pokemonCryUrl" type="url" placeholder="https://..." />
+                    </label>
+                    <label>
+                      <span>Tipos</span>
+                      <input id="pokemonTypes" type="text" placeholder="electric, psychic" />
+                    </label>
+                    <label>
+                      <span>HP</span>
+                      <input id="pokemonHp" type="number" min="1" required />
+                    </label>
+                    <label>
+                      <span>Ataque</span>
+                      <input id="pokemonAtk" type="number" min="1" required />
+                    </label>
+                    <label>
+                      <span>Velocidade</span>
+                      <input id="pokemonSpeed" type="number" min="1" required />
+                    </label>
+                    <label>
+                      <span>Alcance</span>
+                      <input id="pokemonRange" type="number" min="1" required />
+                    </label>
+                    <label>
+                      <span>Atk Speed (ms)</span>
+                      <input id="pokemonAtkSpeed" type="number" min="100" step="50" required />
+                    </label>
+                    <label>
+                      <span>Custo</span>
+                      <input id="pokemonCost" type="number" min="1" max="10" required />
+                    </label>
+                    <label>
+                      <span>Raridade</span>
+                      <select id="pokemonRarity">
+                        <option>Comum</option>
+                        <option>Épica</option>
+                        <option>Lendária</option>
+                      </select>
+                    </label>
+                    <label>
+                      <span>Splash Radius</span>
+                      <input id="pokemonSplashRadius" type="number" min="0" step="1" value="0" />
+                    </label>
+                    <label>
+                      <span>Ordem</span>
+                      <input id="pokemonSortOrder" type="number" min="0" step="1" value="0" />
+                    </label>
+                    <label class="toggle-field">
+                      <span>Ativo</span>
+                      <input id="pokemonActive" type="checkbox" checked />
+                    </label>
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="submit" class="primary-btn">
+                      <i class="fas fa-save"></i>
+                      Salvar Pokémon
+                    </button>
+                    <button id="resetPokemonFormBtn" type="button" class="ghost-btn">
+                      Limpar
+                    </button>
+                  </div>
+                </form>
+                <p id="pokemonMessage" class="status-text"></p>
+              </section>
+
+              <section class="panel-card list-card">
+                <div class="card-head">
+                  <h2>Catálogo remoto</h2>
+                  <span id="pokemonCount" class="pill">0 itens</span>
+                </div>
+                <div id="pokemonList" class="catalog-list"></div>
+              </section>
+            </div>
+          </section>
+
+          <section id="itemsPanel" class="admin-panel" style="display: none;">
+            <div class="panel-layout">
+              <section class="panel-card editor-card">
+                <div class="card-head">
+                  <h2>Novo item / spell</h2>
+                  <span class="pill">CRUD</span>
+                </div>
+
+                <form id="itemForm" class="admin-form compact-form">
+                  <input id="itemId" type="hidden" />
+                  <div class="form-grid">
+                    <label>
+                      <span>Slug</span>
+                      <input id="itemSlug" type="text" placeholder="spell_blizzard" required />
+                    </label>
+                    <label>
+                      <span>Nome</span>
+                      <input id="itemName" type="text" placeholder="Nevasca" required />
+                    </label>
+                    <label>
+                      <span>Tipo de item</span>
+                      <select id="itemKind">
+                        <option value="spell">Spell</option>
+                        <option value="shop">Loja</option>
+                        <option value="reward">Recompensa</option>
+                      </select>
+                    </label>
+                    <label>
+                      <span>Sprite</span>
+                      <input id="itemFrontSprite" type="url" placeholder="https://..." required />
+                    </label>
+                    <label>
+                      <span>Effect Sprite</span>
+                      <input id="itemEffectSprite" type="url" placeholder="https://..." />
+                    </label>
+                    <label>
+                      <span>Tipos</span>
+                      <input id="itemTypes" type="text" placeholder="ice" />
+                    </label>
+                    <label>
+                      <span>Dano / Valor</span>
+                      <input id="itemAtk" type="number" min="0" required />
+                    </label>
+                    <label>
+                      <span>Raio</span>
+                      <input id="itemRadius" type="number" min="0" value="0" />
+                    </label>
+                    <label>
+                      <span>Custo</span>
+                      <input id="itemCost" type="number" min="0" required />
+                    </label>
+                    <label>
+                      <span>Raridade</span>
+                      <select id="itemRarity">
+                        <option>Comum</option>
+                        <option>Épica</option>
+                        <option>Lendária</option>
+                      </select>
+                    </label>
+                    <label>
+                      <span>Ordem</span>
+                      <input id="itemSortOrder" type="number" min="0" step="1" value="0" />
+                    </label>
+                    <label class="toggle-field">
+                      <span>Ativo</span>
+                      <input id="itemActive" type="checkbox" checked />
+                    </label>
+                  </div>
+
+                  <div class="form-actions">
+                    <button type="submit" class="primary-btn">
+                      <i class="fas fa-save"></i>
+                      Salvar item
+                    </button>
+                    <button id="resetItemFormBtn" type="button" class="ghost-btn">
+                      Limpar
+                    </button>
+                  </div>
+                </form>
+                <p id="itemMessage" class="status-text"></p>
+              </section>
+
+              <section class="panel-card list-card">
+                <div class="card-head">
+                  <h2>Itens remotos</h2>
+                  <span id="itemCount" class="pill">0 itens</span>
+                </div>
+                <div id="itemList" class="catalog-list"></div>
+              </section>
+            </div>
+          </section>
+
+          <section id="notesPanel" class="admin-panel" style="display: none;">
+            <div class="content-grid">
+              <section class="panel-card">
+                <div class="card-head">
+                  <h2>Sugestões imediatas</h2>
+                  <span class="pill">Produto</span>
+                </div>
+                <div class="tips-list">
+                  <article>
+                    <strong>Separar autenticação do jogador</strong>
+                    <p>
+                      Hoje o progresso usa UUID local. Migrar jogadores para `supabase.auth`
+                      simplifica banimento, moderação, temporada e cross-device.
+                    </p>
+                  </article>
+                  <article>
+                    <strong>Normalizar estatísticas de batalha</strong>
+                    <p>
+                      Criar uma tabela `battle_logs` permitiria ver win rate por carta, duração
+                      média e cartas dominantes do meta.
+                    </p>
+                  </article>
+                  <article>
+                    <strong>Versionar balanceamento</strong>
+                    <p>
+                      Adicione campo `balance_version` no conteúdo remoto para medir o impacto de
+                      buffs e nerfs por patch.
+                    </p>
+                  </article>
+                </div>
+              </section>
+
+              <section class="panel-card">
+                <div class="card-head">
+                  <h2>Leituras do projeto</h2>
+                  <span class="pill">Análise</span>
+                </div>
+                <div class="tips-list">
+                  <article>
+                    <strong>Força atual</strong>
+                    <p>
+                      O jogo já tem loop de batalha, progressão, loja e PvP em tempo real, o que
+                      dá uma base boa para operar live content.
+                    </p>
+                  </article>
+                  <article>
+                    <strong>Risco técnico</strong>
+                    <p>
+                      `src/main.js` está grande demais. O próximo passo saudável é dividir em
+                      módulos: catálogo, UI, batalha, PvP e progressão.
+                    </p>
+                  </article>
+                  <article>
+                    <strong>Melhor oportunidade</strong>
+                    <p>
+                      O admin remoto que estamos adicionando já abre caminho para eventos sazonais,
+                      cartas limitadas e rotação de loja.
+                    </p>
+                  </article>
+                </div>
+              </section>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/src/admin.js"></script>
+  </body>
+</html>
+
+

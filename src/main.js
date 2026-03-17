@@ -1,11 +1,16 @@
 import './style.css';
 import { supabase } from './supabase.js';
 
-let USER_ID = localStorage.getItem("pokeClash_userId");
+const USER_ID_KEY = "pokeRoyale_userId";
+const LEGACY_USER_ID_KEY = "pokeClash_userId";
+const SAVE_KEY = "pokeRoyale_save";
+const LEGACY_SAVE_KEY = "pokeClash_save";
+
+let USER_ID = localStorage.getItem(USER_ID_KEY) || localStorage.getItem(LEGACY_USER_ID_KEY);
 if (!USER_ID) {
   USER_ID = crypto.randomUUID();
-  localStorage.setItem("pokeClash_userId", USER_ID);
 }
+localStorage.setItem(USER_ID_KEY, USER_ID);
 
 let GAME_DATA = {
   pokemonList: [],
@@ -45,6 +50,7 @@ let GAME_DATA = {
   
   // Shop State
   dailyOffers: [],
+  adminItems: [],
   
   // Battle State
   matchTime: 180,
@@ -56,7 +62,6 @@ let GAME_DATA = {
   opponentData: null
 };
 
-// --- Persistência (Supabase) ---
 async function saveGame() {
   const dataToSave = {
     gold: GAME_DATA.gold,
@@ -84,7 +89,7 @@ async function saveGame() {
   if (error) {
     console.error("Erro ao salvar no Supabase:", error);
     // Fallback to localstorage if DB fails
-    localStorage.setItem("pokeClash_save", JSON.stringify(dataToSave));
+    localStorage.setItem(SAVE_KEY, JSON.stringify(dataToSave));
   }
 }
 
@@ -100,7 +105,7 @@ async function loadGame() {
     saveData = data.game_data;
   } else {
     // Fallback to localStorage for migration or offline
-    const localSaved = localStorage.getItem("pokeClash_save");
+    const localSaved = localStorage.getItem(SAVE_KEY) || localStorage.getItem(LEGACY_SAVE_KEY);
     if (localSaved) saveData = JSON.parse(localSaved);
   }
 
@@ -131,7 +136,7 @@ async function startMatchmaking() {
   document.getElementById("matchmakingOverlay").style.display = "flex";
   GAME_DATA.isPvP = true;
   
-  lobbyChannel = supabase.channel('pokeclash-lobby', {
+  lobbyChannel = supabase.channel('poke-royale-lobby', {
     config: { presence: { key: USER_ID } }
   });
 
@@ -321,7 +326,7 @@ function getBridgeAwareTarget(u, target) {
     }
   }
 
-  // Same side — direct path
+  // Same side ??,???? direct path
   return target;
 }
 
@@ -363,8 +368,7 @@ window.buySpecialChest = function(type) {
   if (GAME_DATA.candies >= cost) {
     const emptySlot = GAME_DATA.chests.findIndex(c => c === null);
     if (emptySlot === -1) {
-      alert("Seus slots de baú estão cheios!");
-      return;
+      alert("Seus slots de bau estao cheios!");
     }
     
     GAME_DATA.candies -= cost;
@@ -393,7 +397,6 @@ function generateDailyOffers() {
     let cost = 500;
     if (card.rarity === "Épica") cost = 2000;
     if (card.rarity === "Lendária") cost = 10000;
-    
     offers.push({ card: {...card}, cost: cost, bought: false });
   }
   
@@ -516,7 +519,6 @@ function openChest(index) {
         }
     }
 
-    alert(`Você abriu a ${chest.name}!\n+${goldBonus} Moedas\n+${candyBonus} Doces${cardDropMsg}`);
     GAME_DATA.chests[index] = null;
     updateCurrencyUI();
     renderChests();
@@ -560,24 +562,126 @@ function showSplash() {
   }, 2000);
 }
 
+const DEFAULT_POKEMON_IDS = [
+  1, 4, 7, 25, 39, 66, 74, 92, 94, 6, 9, 3, 130, 133, 143, 149, 150, 151, 144, 145, 146,
+  2, 5, 8, 26, 65, 68, 76, 123, 131, 134, 135, 136, 59, 112, 115, 121, 137, 142, 147, 148
+];
+
+const DEFAULT_SPELLS = [
+  {
+    id: "spell_fireball",
+    frontSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/fire-stone.png",
+    backSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/fire-stone.png",
+    effectSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/red-flute.png",
+    isSpell: true,
+    atk: 250, hp: 0, maxHp: 0,
+    radius: 12,
+    cost: 4,
+    level: 1,
+    types: ["fire"]
+  },
+  {
+    id: "spell_thunder",
+    name: "Raio",
+    frontSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/thunder-stone.png",
+    backSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/thunder-stone.png",
+    effectSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/yellow-flute.png",
+    isSpell: true,
+    atk: 100, hp: 0, maxHp: 0,
+    radius: 8,
+    cost: 2,
+    level: 1,
+    rarity: "Comum",
+    types: ["electric"]
+  }
+];
+
+function mergeCatalogEntries(baseEntries, extraEntries) {
+  const merged = new Map();
+  [...baseEntries, ...extraEntries].forEach((entry) => {
+    merged.set(String(entry.id), entry);
+  });
+  return Array.from(merged.values());
+}
+
+function normalizeRemotePokemon(entry) {
+  return {
+    id: entry.slug,
+    name: entry.name,
+    frontSprite: entry.front_sprite,
+    backSprite: entry.back_sprite || entry.front_sprite,
+    cry: entry.cry_url || null,
+    hp: Number(entry.hp || 100),
+    maxHp: Number(entry.hp || 100),
+    atk: Number(entry.atk || 20),
+    speed: Number(entry.speed || 20),
+    range: Number(entry.range || 30),
+    atkSpeed: Number(entry.atk_speed || 1000),
+    cost: Number(entry.cost || 3),
+    level: 1,
+    rarity: entry.rarity || "Comum",
+    types: Array.isArray(entry.types) ? entry.types : [],
+    splashRadius: Number(entry.splash_radius || 0)
+  };
+}
+
+function normalizeRemoteItem(entry) {
+  return {
+    id: entry.slug,
+    name: entry.name,
+    frontSprite: entry.front_sprite,
+    backSprite: entry.front_sprite,
+    effectSprite: entry.effect_sprite || entry.front_sprite,
+    isSpell: entry.item_kind === 'spell',
+    atk: Number(entry.atk || 0),
+    hp: 0,
+    maxHp: 0,
+    radius: Number(entry.radius || 0),
+    cost: Number(entry.cost || 0),
+    level: 1,
+    rarity: entry.rarity || "Comum",
+    types: Array.isArray(entry.types) ? entry.types : []
+  };
+}
+
+async function loadRemoteAdminCatalog() {
+  try {
+    const [{ data: remotePokemon, error: pokemonError }, { data: remoteItems, error: itemsError }] = await Promise.all([
+      supabase.from('game_pokemon').select('*').eq('active', true).order('sort_order', { ascending: true }).order('name', { ascending: true }),
+      supabase.from('game_items').select('*').eq('active', true).order('sort_order', { ascending: true }).order('name', { ascending: true })
+    ]);
+
+    if (pokemonError || itemsError) {
+      console.warn('Catalogo remoto indisponivel:', pokemonError || itemsError);
+      return { pokemon: [], items: [], spells: [] };
+    }
+
+    const pokemon = (remotePokemon || []).map(normalizeRemotePokemon);
+    const items = remoteItems || [];
+    const spells = items.filter((entry) => entry.item_kind === 'spell').map(normalizeRemoteItem);
+
+    return { pokemon, items, spells };
+  } catch (error) {
+    console.warn('Falha ao carregar catalogo remoto:', error);
+    return { pokemon: [], items: [], spells: [] };
+  }
+}
+
 // Simplified Fetch from PokeAPI
 async function startDataFetch() {
   const loadingText = document.getElementById("loadingText");
   const loadingBar = document.getElementById("loadingBarFill");
   const promises = [];
-  const ids = [1, 4, 7, 25, 39, 66, 74, 92, 94, 6, 9, 3, 130, 133, 143, 149, 150, 151, 144, 145, 146, 
-               2, 5, 8, 26, 65, 68, 76, 123, 131, 134, 135, 136, 59, 112, 115, 121, 137, 142, 147, 148];
   let loaded = 0;
   
-  for (let i = 0; i < ids.length; i++) {
+  for (let i = 0; i < DEFAULT_POKEMON_IDS.length; i++) {
     promises.push(
-      fetch(`https://pokeapi.co/api/v2/pokemon/${ids[i]}`)
+      fetch(`https://pokeapi.co/api/v2/pokemon/${DEFAULT_POKEMON_IDS[i]}`)
         .then(res => res.json())
         .then(data => {
           loaded++;
-          const pct = Math.round((loaded / ids.length) * 100);
-          if (loadingText) loadingText.innerText = `Carregando Pokémon... ${pct}%`;
-          if (loadingBar) loadingBar.style.width = `${pct}%`;
+          const pct = Math.round((loaded / DEFAULT_POKEMON_IDS.length) * 100);
+          if (loadingText) loadingText.innerText = `Carregando Pokemon... ${pct}%`;
 
           let hp = 100 + data.stats.find(s => s.stat.name === 'hp').base_stat * 2;
           let atk = data.stats.find(s => s.stat.name === 'attack').base_stat / 2;
@@ -588,7 +692,6 @@ async function startDataFetch() {
           let rarityMult = 1.0;
           if (bst > 580) { rarity = "Lendária"; rarityMult = 1.4; cost = Math.max(cost, 7); }
           else if (bst > 480) { rarity = "Épica"; rarityMult = 1.2; cost = Math.max(cost, 4); }
-          
           hp = Math.floor(hp * rarityMult);
           atk = Math.floor(atk * rarityMult);
 
@@ -621,13 +724,18 @@ async function startDataFetch() {
   }
   
   const results = await Promise.all(promises);
-  GAME_DATA.pokemonList = results;
+  const remoteCatalog = await loadRemoteAdminCatalog();
+  GAME_DATA.adminItems = remoteCatalog.items;
+  GAME_DATA.pokemonList = mergeCatalogEntries(
+    mergeCatalogEntries(results, DEFAULT_SPELLS),
+    [...remoteCatalog.pokemon, ...remoteCatalog.spells]
+  );
+  /*
   
   // Add Spells
   const spells = [
     {
       id: "spell_fireball",
-      name: "Explosão de Fogo",
       frontSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/fire-stone.png",
       backSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/fire-stone.png",
       effectSprite: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/red-flute.png",
@@ -636,8 +744,7 @@ async function startDataFetch() {
       radius: 12,
       cost: 4,
       level: 1,
-      rarity: "Épica",
-      types: ["fire"]
+      rarity: "Epica",
     },
     {
       id: "spell_thunder",
@@ -656,6 +763,7 @@ async function startDataFetch() {
   ];
   GAME_DATA.pokemonList.push(...spells);
   
+  */
   // Try to load saved game
   const hasSave = await loadGame();
   
@@ -765,8 +873,7 @@ function openCardModal(card) {
 
     <div class="card-stats-grid">
        <div class="stat-box">
-          <label>Nível</label>
-          <span>${level}</span>
+          <label>Nivel</label>
        </div>
        <div class="stat-box">
           <label>Custo</label>
@@ -814,7 +921,6 @@ document.getElementById("upgradeCardBtn").onclick = () => {
   const candyCost = level * 5;
   
   if (currentCopies < copiesNeeded) {
-    alert("Você precisa de mais cópias desta carta!");
     return;
   }
   
@@ -854,7 +960,6 @@ function tryEvolveToNextForm(card) {
     if (nextFormName && (card.level === 5 || card.level === 10)) {
         const nextFormData = GAME_DATA.pokemonList.find(p => p.name.toLowerCase() === nextFormName);
         if (nextFormData) {
-            alert(`UAU! Seu ${card.name.toUpperCase()} está evoluindo para ${nextFormData.name.toUpperCase()}!`);
             // Transfer stats but use new visuals
             card.id = nextFormData.id;
             card.name = nextFormData.name;
@@ -862,8 +967,7 @@ function tryEvolveToNextForm(card) {
             card.backSprite = nextFormData.backSprite;
             card.cry = nextFormData.cry;
             // Also update base stats to the new form's stats, keeping the level
-            const rarityMult = card.rarity === "Lendária" ? 1.4 : (card.rarity === "Épica" ? 1.2 : 1.0);
-            card.hp = Math.floor(nextFormData.hp);
+            const rarityMult = card.rarity === "Lendaria" ? 1.4 : (card.rarity === "Epica" ? 1.2 : 1.0);
             card.maxHp = card.hp;
             card.atk = Math.floor(nextFormData.atk);
             card.speed = nextFormData.speed;
@@ -885,8 +989,7 @@ function getCurrentArenaIndex() {
 function updateArenaUI() {
   const currentArena = ARENAS[getCurrentArenaIndex()];
   document.getElementById("arenaTitleDisplay").innerText = currentArena.name;
-  document.getElementById("arenaTrophiesDisplay").innerText = `Troféus: ${GAME_DATA.trophies}`;
-  document.querySelector(".arena-display").style.backgroundImage = `url('${currentArena.bg}')`;
+  document.getElementById("arenaTrophiesDisplay").innerText = `Trofeus: ${GAME_DATA.trophies}`;
 }
 
 function renderLeagues() {
@@ -899,11 +1002,12 @@ function renderLeagues() {
     el.className = `league-item ${index <= currentIdx ? 'unlocked' : 'locked'} ${index === currentIdx ? 'current' : ''}`;
     el.innerHTML = `
       <h3>${arena.name}</h3>
-      <p>${arena.minTrophies} Troféus</p>
+      <p>${arena.minTrophies} Trofeus</p>
     `;
     container.appendChild(el);
   });
 }
+
 
 function renderBadges() {
   document.getElementById("statWins").innerText = GAME_DATA.wins;
@@ -926,14 +1030,15 @@ function renderBadges() {
 }
 
 document.getElementById("resetAccountBtn").addEventListener("click", async () => {
-  if (!confirm("Tem certeza? Todos os seus dados serão apagados e você começará do zero!")) return;
 
   // Delete from Supabase
   await supabase.from('profiles').delete().eq('user_id', USER_ID);
   
   // Clear local storage & generate fresh ID
-  localStorage.removeItem("pokeClash_save");
-  localStorage.removeItem("pokeClash_userId");
+  localStorage.removeItem(SAVE_KEY);
+  localStorage.removeItem(LEGACY_SAVE_KEY);
+  localStorage.removeItem(USER_ID_KEY);
+  localStorage.removeItem(LEGACY_USER_ID_KEY);
 
   // Reload the page to start fresh
   location.reload();
@@ -1204,7 +1309,6 @@ function playCry(audioUrl) {
 
 function playMusic() {
   if (!bgmElement) {
-    // Pokémon Center theme or similar placeholder
     bgmElement = new Audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"); 
     bgmElement.loop = true;
     bgmElement.volume = 0.15;
@@ -1267,8 +1371,7 @@ function spawnEnemyUnit() {
     // Arena 0: Comum only. Arena 1: Comum + some Epics. Arena 2+: All.
     let pool = GAME_DATA.pokemonList.filter(p => {
        if (currentArenaIdx === 0) return p.rarity === "Comum";
-       if (currentArenaIdx === 1) return p.rarity !== "Lendária";
-       return true;
+       if (currentArenaIdx === 1) return p.rarity !== "Lendaria";
     });
     
     const card = { ...pool[Math.floor(Math.random() * pool.length)] };
@@ -1388,10 +1491,9 @@ function createUnit(model, x, y, team) {
   unitEl.classList.add("deploying");
   
   // Add rarity effects to unit sprite
-  if (model.rarity === "Épica") {
-    unitEl.querySelector("img").style.filter += " drop-shadow(0 0 5px #a855f7)";
-  } else if (model.rarity === "Lendária") {
-    unitEl.querySelector("img").style.filter += " drop-shadow(0 0 8px #facc15)";
+  if (model.rarity === "Epica") {
+    unitEl.classList.add("epic-aura");
+  } else if (model.rarity === "Lendaria") {
     unitEl.classList.add("legendary-aura");
   }
 }
@@ -1565,7 +1667,7 @@ function update(time) {
                        setTimeout(() => { if(en.el) en.el.style.filter = ""; }, 60);
                     }
                  });
-                 // Also towers in splash? Usually yes in Clash Royale splash
+                 // Also towers in splash? Usually yes in Pok? Royale splash
                  const affectedTowers = GAME_DATA.towers.filter(t => t.team !== u.team && t.hp > 0 && Math.hypot(t.x - target.ref.x, (t.y - target.ref.y) * ratio) <= u.splashRadius);
                  affectedTowers.forEach(t => {
                     t.hp -= u.atk;
@@ -1760,25 +1862,24 @@ function endGame(playerWon) {
       GAME_DATA.playerXP -= xpRequired;
       GAME_DATA.playerLevel++;
       xpRequired = GAME_DATA.playerLevel * 100;
-      levelUpMsg = "\nNÍVEL UP!";
+      levelUpMsg = "\nNIVEL UP!";
     }
     
-    // Chest logic
     const emptySlotIndex = GAME_DATA.chests.findIndex(c => c === null);
     let chestMsg = "";
     if (emptySlotIndex !== -1 && Math.random() < 0.8) {
       const newChest = getChestDrop();
       GAME_DATA.chests[emptySlotIndex] = newChest;
-      chestMsg = `\nvocê encontrou uma ${newChest.name}!`;
+      chestMsg = `\nvoce encontrou uma ${newChest.name}!`;
     }
     
     const newArenaIdx = getCurrentArenaIndex();
     let arenaMsg = "";
     if (newArenaIdx > oldArenaIdx) {
-       arenaMsg = `\nNOVA LIGA: ${ARENAS[newArenaIdx].name}!`;
-       if (ARENAS[newArenaIdx].badgeName) {
-           arenaMsg += `\nGANHOU: ${ARENAS[newArenaIdx].badgeName}!`;
-       }
+      arenaMsg = `\nNOVA LIGA: ${ARENAS[newArenaIdx].name}!`;
+      if (ARENAS[newArenaIdx].badgeName) {
+        arenaMsg += `\nGANHOU: ${ARENAS[newArenaIdx].badgeName}!`;
+      }
     }
     
     updateCurrencyUI();
@@ -1786,10 +1887,9 @@ function endGame(playerWon) {
     updateProfileUI();
     updateArenaUI();
     
-    title.innerText = `VITÓRIA!\n+10 Troféus\n+30 Moedas\n+${gainedCandies} Doces\n+30 XP${levelUpMsg}${chestMsg}${arenaMsg}`;
+    title.innerText = `VITORIA!\n+10 Trofeus\n+30 Moedas\n+${gainedCandies} Doces\n+30 XP${levelUpMsg}${chestMsg}${arenaMsg}`;
     title.style.color = "#fbbf24";
   } else {
-    // LOSS
     GAME_DATA.playerXP -= 15;
     if (GAME_DATA.playerXP < 0) GAME_DATA.playerXP = 0;
     
@@ -1800,7 +1900,7 @@ function endGame(playerWon) {
     updateProfileUI();
     updateArenaUI();
     
-    title.innerText = "DERROTA\n-5 Troféus\n-15 XP";
+    title.innerText = "DERROTA\n-5 Trofeus\n-15 XP";
     title.style.color = "#ef4444";
   }
   applyScreenShake(15);
@@ -1977,8 +2077,7 @@ function updateProjectiles(dt) {
         
         let textType = 'normal';
         let displayText = `-${finalDmg}`;
-        if (isEffective > 1.1) { textType = 'effective'; displayText = `CRÍTICO\n-${finalDmg}`; applyScreenShake(2); }
-        if (isEffective < 0.9 && isEffective > 0.1) { textType = 'not-effective'; }
+        if (isEffective > 1.1) { textType = 'effective'; displayText = `CRITICO\n-${finalDmg}`; applyScreenShake(2); }
         if (isEffective === 0) { textType = 'immune'; displayText = 'IMUNE'; }
         
         showFloatingText(target.x, target.y, displayText, textType);
@@ -2055,3 +2154,4 @@ function createSplashEffect(x, y, radius, type) {
 
 // Start
 // fetchPokemonData() is now called via btnPlayNow logic
+

@@ -1,7 +1,7 @@
 {
-  "name": "PokéClash",
-  "short_name": "PokéClash",
-  "description": "Jogo de batalha de Pokémon estilo Clash Royale",
+  "name": "Poké Royale",
+  "short_name": "Poké Royale",
+  "description": "Jogo de batalha de Pokémon estilo Poké Royale",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
@@ -9,16 +9,18 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/logo.png",
+      "src": "/poke-royale.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/logo.png",
+      "src": "/poke-royale.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ]
 }
+
+

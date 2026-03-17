@@ -2,35 +2,32 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>PokéClash</title>
-    
-    <!-- PWA Meta Tags -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Poke Royale</title>
+
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="PokéClash" />
+    <meta name="apple-mobile-web-app-title" content="Poke Royale" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="theme-color" content="#1e3a8a" />
-    <meta name="description" content="Jogo de batalha de Pokémon estilo Clash Royale" />
-    
-    <!-- PWA Icons (Apple) -->
-    <link rel="apple-touch-icon" href="/logo.png" />
-    
-    <!-- PWA Manifest -->
+    <meta name="description" content="Jogo de batalha de Pokemon estilo Poke Royale" />
+
+    <link rel="apple-touch-icon" href="/poke-royale.png" />
     <link rel="manifest" href="/manifest.json" />
-    
-    <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
-    <link rel="stylesheet" href="/src/style.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/node_modules/@fortawesome/fontawesome-free/css/all.min.css" />
+    <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <!-- Landing Page (Home) -->
     <div id="landingPage">
       <div class="landing-content">
         <header class="landing-header">
-          <img src="/logo.png" alt="PokéClash Logo" class="landing-logo-img" />
-          <h1>POKÉCLASH ROYAL</h1>
+          <img src="/poke-royale.png" alt="Poke Royale Logo" class="landing-logo-img" />
+          <h1>POKÉ ROYALE</h1>
           <p class="tagline">O Próximo Nível das Batalhas Pokémon</p>
         </header>
 
@@ -56,28 +53,30 @@
           <button id="btnPlayNow" class="primary-btn">
             <i class="fas fa-play"></i> LOGIN / JOGAR
           </button>
+          <a href="/admin.html" class="admin-entry-link">
+            <i class="fas fa-shield-halved"></i> Painel Admin
+          </a>
           <p class="beta-tag">BETA v1.5 - Multi-Cloud Enabled</p>
         </div>
 
         <section class="landing-ranking">
-          <h3>👑 RANKING GLOBAL</h3>
+          <h3>RANKING GLOBAL</h3>
           <div id="leaderboardList" class="leaderboard-list">
-             <div class="loading-msg">Carregando heróis...</div>
+            <div class="loading-msg">Carregando heróis...</div>
           </div>
         </section>
       </div>
-      
+
       <div class="landing-footer">
         <div class="news-ticker">
-           <span><i class="fas fa-bullhorn"></i> NOVIDADES: Sistema de Tipos Elementais ativado!</span>
-           <span><i class="fas fa-star"></i> UPDATE: Dano em Área para Lendários disponível.</span>
+          <span><i class="fas fa-bullhorn"></i> NOVIDADES: Sistema de Tipos Elementais ativado!</span>
+          <span><i class="fas fa-star"></i> UPDATE: Dano em Area para Lendarios disponivel.</span>
         </div>
       </div>
     </div>
 
-    <!-- Splash Screen -->
     <div id="splashScreen" style="display: none;">
-      <img id="splashLogo" src="/logo.png" alt="PokéClash Logo" />
+      <img id="splashLogo" src="/poke-royale.png" alt="Poke Royale Logo" />
       <div class="splash-loader">
         <div class="splash-loader-bar"></div>
       </div>
@@ -85,152 +84,133 @@
     </div>
 
     <div id="loadingScreen" style="display: none;">
-      <img src="/logo.png" alt="PokéClash" class="loading-logo" />
+      <img src="/poke-royale.png" alt="Poke Royale" class="loading-logo" />
       <p id="loadingText">Carregando dados Pokémon...</p>
       <div class="loading-bar-outer">
         <div id="loadingBarFill" class="loading-bar-inner"></div>
       </div>
     </div>
 
-    <!-- Setup Screen -->
     <div id="setupScreen" style="display: none;">
       <h2>Crie seu Treinador</h2>
       <div class="avatar-selection">
-         <p>Escolha seu inicial:</p>
-         <div class="avatar-options">
-            <img class="avatar-option selected" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png">
-            <img class="avatar-option" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png">
-            <img class="avatar-option" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png">
-            <img class="avatar-option" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png">
-         </div>
+        <p>Escolha seu inicial:</p>
+        <div class="avatar-options">
+          <img class="avatar-option selected" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png">
+          <img class="avatar-option" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png">
+          <img class="avatar-option" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png">
+          <img class="avatar-option" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png">
+        </div>
       </div>
       <input type="text" id="playerNameInput" placeholder="Digite seu nome..." maxlength="15" />
       <button id="startGameBtn">Começar Jornada</button>
     </div>
 
-    <!-- Main Menu Screen -->
     <div id="mainMenu" style="display: none;">
       <div id="playerProfile">
         <div class="avatar">
-           <img id="playerAvatarDisplay" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png" />
+          <img id="playerAvatarDisplay" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png" />
         </div>
         <div class="info">
-           <h2 id="playerNameDisplay">Treinador</h2>
-           <p>Nível <span id="playerLevelDisplay">1</span></p>
-           <div class="xp-bar-container">
-             <div id="playerXpFill" class="xp-bar-fill"></div>
-           </div>
+          <h2 id="playerNameDisplay">Treinador</h2>
+          <p>Nível <span id="playerLevelDisplay">1</span></p>
+          <div class="xp-bar-container">
+            <div id="playerXpFill" class="xp-bar-fill"></div>
+          </div>
         </div>
         <div class="currency">
-           <button id="musicToggleBtn" class="music-btn"><i class="fas fa-volume-up"></i></button>
-           <span class="gold"><i class="fas fa-coins"></i> <span id="goldVal">0</span></span>
-           <span class="gems"><i class="fas fa-gem"></i> <span id="candyVal" style="color:#d946ef">0</span> <i class="fas fa-candy-cane" style="color:#d946ef"></i></span>
+          <button id="musicToggleBtn" class="music-btn"><i class="fas fa-volume-up"></i></button>
+          <span class="gold"><i class="fas fa-coins"></i> <span id="goldVal">0</span></span>
+          <span class="gems"><i class="fas fa-gem"></i> <span id="candyVal" style="color:#d946ef">0</span> <i class="fas fa-candy-cane" style="color:#d946ef"></i></span>
         </div>
       </div>
 
-      <!-- Arena Tab -->
       <div id="arenaTab" class="menu-tab active-tab">
         <div class="arena-display">
-           <h3 id="arenaTitleDisplay">Arena da Cidade de Pallet</h3>
-           <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pikachu" class="mascot" />
-           <p id="arenaTrophiesDisplay">Troféus: 0</p>
-           
-           <div class="battle-selection">
-              <button id="toBattleBotBtn" class="battle-choice-btn bot">
-                 <i class="fas fa-robot"></i> Treinar (BOT)
-              </button>
-              <button id="toBattlePvpBtn" class="battle-choice-btn pvp">
-                 <i class="fas fa-globe"></i> Batalha Real (PvP)
-              </button>
-           </div>
+          <h3 id="arenaTitleDisplay">Arena da Cidade de Pallet</h3>
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png" alt="Pikachu" class="mascot" />
+          <p id="arenaTrophiesDisplay">Troféus: 0</p>
+
+          <div class="battle-selection">
+            <button id="toBattleBotBtn" class="battle-choice-btn bot">
+              <i class="fas fa-robot"></i> Treinar (BOT)
+            </button>
+            <button id="toBattlePvpBtn" class="battle-choice-btn pvp">
+              <i class="fas fa-globe"></i> Batalha Real (PvP)
+            </button>
+          </div>
         </div>
         <div id="chestArea">
-           <div class="chest-slot" data-slot="0">Vazio</div>
-           <div class="chest-slot" data-slot="1">Vazio</div>
-           <div class="chest-slot" data-slot="2">Vazio</div>
-           <div class="chest-slot" data-slot="3">Vazio</div>
+          <div class="chest-slot" data-slot="0">Vazio</div>
+          <div class="chest-slot" data-slot="1">Vazio</div>
+          <div class="chest-slot" data-slot="2">Vazio</div>
+          <div class="chest-slot" data-slot="3">Vazio</div>
         </div>
 
-        <!-- Updates / News Section -->
         <div class="updates-section">
-           <h4>🚀 NOVIDADES & ATUALIZAÇÕES</h4>
-           <div class="update-item">
-              <span class="update-tag new">NOVO</span>
-              <p><strong>Versão 1.5:</strong> Sistema de Projéteis e Dano em Área (Splash) implementado!</p>
-           </div>
-           <div class="update-item">
-              <span class="update-tag balance">AJUSTE</span>
-              <p>IA da Arena 0 está mais amigável para novos treinadores.</p>
-           </div>
-           <div class="update-item">
-              <span class="update-tag fix">FIX</span>
-              <p>Corrigido bug de colisão entre tropas no rio.</p>
-           </div>
+          <h4>NOVIDADES & ATUALIZAÇÕES</h4>
+          <div class="update-item">
+            <span class="update-tag new">NOVO</span>
+            <p><strong>Versão 1.5:</strong> Sistema de Projetéis e Dano em Área (Splash) implementado!</p>
+          </div>
+          <div class="update-item">
+            <span class="update-tag balance">AJUSTE</span>
+            <p>IA da Arena 0 está mais amigável para novos treinadores.</p>
+          </div>
+          <div class="update-item">
+            <span class="update-tag fix">FIX</span>
+            <p>Corrigido bug de colisão entre tropas no rio.</p>
+          </div>
         </div>
       </div>
 
-      <!-- Shop Tab -->
       <div id="shopTab" class="menu-tab" style="display: none;">
         <h2 class="tab-title">Loja de Cartas</h2>
-        
+
         <div class="shop-section">
-          <h3>Ofertas Diárias</h3>
-          <div id="dailyOffersSlots" class="shop-grid">
-             <!-- Rendered via JS -->
-          </div>
+          <h3>Ofertas Diarias</h3>
+          <div id="dailyOffersSlots" class="shop-grid"></div>
         </div>
 
         <div class="shop-section">
-          <h3>Baús Especiais</h3>
+          <h3>Baus Especiais</h3>
           <div class="shop-grid">
-             <div class="shop-item specialty-chest" onclick="buySpecialChest('mega')">
-                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png" />
-                <h4>Mega Pokébola</h4>
-                <p>Garante 1 Épica!</p>
-                <button class="buy-btn"><i class="fas fa-gem"></i> 20 <i class="fas fa-candy-cane"></i></button>
-             </div>
-             <div class="shop-item specialty-chest" onclick="buySpecialChest('ultra')">
-                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png" />
-                <h4>Ultra Pokébola</h4>
-                <p>Garante 1 Lendária!</p>
-                <button class="buy-btn"><i class="fas fa-gem"></i> 50 <i class="fas fa-candy-cane"></i></button>
-             </div>
+            <div class="shop-item specialty-chest" onclick="buySpecialChest('mega')">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png" />
+              <h4>Mega Pokebola</h4>
+              <p>Garante 1 Épica!</p>
+              <button class="buy-btn"><i class="fas fa-gem"></i> 20 <i class="fas fa-candy-cane"></i></button>
+            </div>
+            <div class="shop-item specialty-chest" onclick="buySpecialChest('ultra')">
+              <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png" />
+              <h4>Ultra Pokebola</h4>
+              <p>Garante 1 Lendária!</p>
+              <button class="buy-btn"><i class="fas fa-gem"></i> 50 <i class="fas fa-candy-cane"></i></button>
+            </div>
           </div>
         </div>
       </div>
 
-
-      <!-- Collection Tab -->
       <div id="collectionTab" class="menu-tab" style="display: none;">
         <h2 class="tab-title">Meu Deck</h2>
-        <div id="deckArea" class="card-grid deck-grid">
-           <!-- Rendered via JS -->
-        </div>
-        
+        <div id="deckArea" class="card-grid deck-grid"></div>
+
         <h2 class="tab-title" style="margin-top: 20px;">Coleção (<span id="collectionCount">0</span>)</h2>
-        <div id="collectionArea" class="card-grid">
-           <!-- Rendered via JS -->
-        </div>
+        <div id="collectionArea" class="card-grid"></div>
       </div>
 
-      <!-- Leagues Tab -->
       <div id="leaguesTab" class="menu-tab" style="display: none;">
         <h2 class="tab-title">Caminho da Liga</h2>
-        <div class="leagues-container" id="leaguesContainer">
-           <!-- Rendered via JS -->
-        </div>
+        <div class="leagues-container" id="leaguesContainer"></div>
       </div>
 
-      <!-- Badges Tab -->
       <div id="badgesTab" class="menu-tab" style="display: none;">
         <h2 class="tab-title">Insígnias</h2>
         <div class="stats-panel">
-           <p>Vitórias: <span id="statWins">0</span></p>
-           <p>Derrotas: <span id="statLosses">0</span></p>
+          <p>Vitórias: <span id="statWins">0</span></p>
+          <p>Derrotas: <span id="statLosses">0</span></p>
         </div>
-        <div class="badges-grid" id="badgesContainer">
-           <!-- Rendered via JS -->
-        </div>
+        <div class="badges-grid" id="badgesContainer"></div>
         <div style="padding: 20px; text-align: center; margin-top: auto;">
           <button id="resetAccountBtn" style="background: rgba(239,68,68,0.15); border: 1px solid #ef4444; color: #f87171; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.85rem;">
             <i class="fas fa-trash"></i> Resetar Conta
@@ -239,25 +219,24 @@
         </div>
       </div>
 
-      <!-- Matchmaking Overlay -->
       <div id="matchmakingOverlay" class="modal" style="display: none; background: rgba(0,0,0,0.85); z-index: 200;">
-         <div class="matchmaking-content">
-            <div class="loader-ripple"><div></div><div></div></div>
-            <h2>Procurando Oponente...</h2>
-            <p id="matchmakingStatus">Buscando treinadores na região...</p>
-            <button id="cancelMatchmakingBtn" class="cancel-btn">Cancelar</button>
-         </div>
+        <div class="matchmaking-content">
+          <div class="loader-ripple"><div></div><div></div></div>
+          <h2>Procurando Oponente...</h2>
+          <p id="matchmakingStatus">Buscando treinadores na regiao...</p>
+          <button id="cancelMatchmakingBtn" class="cancel-btn">Cancelar</button>
+        </div>
       </div>
 
       <div class="bottom-nav">
-         <button class="nav-btn" id="btnNavShop"><i class="fas fa-store"></i><span>Loja</span></button>
-         <button class="nav-btn" id="btnNavCollection"><i class="fas fa-layer-group"></i><span>Cartas</span></button>
-         <button class="nav-btn start-battle-btn" id="toBattleBtn">
-            <img class="battle-icon" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png" />
-            <span>Batalhar</span>
-         </button>
-         <button class="nav-btn" id="btnNavLeagues"><i class="fas fa-trophy"></i><span>Ligas</span></button>
-         <button class="nav-btn" id="btnNavBadges"><i class="fas fa-medal"></i><span>Insígnias</span></button>
+        <button class="nav-btn" id="btnNavShop"><i class="fas fa-store"></i><span>Loja</span></button>
+        <button class="nav-btn" id="btnNavCollection"><i class="fas fa-layer-group"></i><span>Cartas</span></button>
+        <button class="nav-btn start-battle-btn" id="toBattleBtn">
+          <img class="battle-icon" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png" />
+          <span>Batalhar</span>
+        </button>
+        <button class="nav-btn" id="btnNavLeagues"><i class="fas fa-trophy"></i><span>Ligas</span></button>
+        <button class="nav-btn" id="btnNavBadges"><i class="fas fa-medal"></i><span>Insígnias</span></button>
       </div>
     </div>
 
@@ -266,49 +245,44 @@
         <div id="matchTimer">3:00</div>
       </div>
       <div id="arena">
-        <!-- Background lines, bridges, river -->
         <div id="river"></div>
         <div class="bridge left"></div>
         <div class="bridge right"></div>
 
-        <!-- Enemy Towers -->
         <div id="enemyTowerLeft" class="tower enemy-tower" style="left: 20%; top: 20%;">
-            <div class="hp-bar"><div class="hp-fill"></div></div>
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" />
+          <div class="hp-bar"><div class="hp-fill"></div></div>
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" />
         </div>
         <div id="enemyTowerRight" class="tower enemy-tower" style="right: 20%; top: 20%;">
-            <div class="hp-bar"><div class="hp-fill"></div></div>
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" />
+          <div class="hp-bar"><div class="hp-fill"></div></div>
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" />
         </div>
         <div id="enemyKingTower" class="tower enemy-tower king-tower" style="left: 50%; top: 5%;">
-            <div class="hp-bar"><div class="hp-fill"></div></div>
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png" />
+          <div class="hp-bar"><div class="hp-fill"></div></div>
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png" />
         </div>
 
-        <!-- Player Towers -->
         <div id="playerTowerLeft" class="tower player-tower" style="left: 20%; bottom: 20%;">
-            <div class="hp-bar"><div class="hp-fill"></div></div>
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" />
+          <div class="hp-bar"><div class="hp-fill"></div></div>
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" />
         </div>
         <div id="playerTowerRight" class="tower player-tower" style="right: 20%; bottom: 20%;">
-            <div class="hp-bar"><div class="hp-fill"></div></div>
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" />
+          <div class="hp-bar"><div class="hp-fill"></div></div>
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" />
         </div>
         <div id="playerKingTower" class="tower player-tower king-tower" style="left: 50%; bottom: 5%;">
-            <div class="hp-bar"><div class="hp-fill"></div></div>
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png" />
+          <div class="hp-bar"><div class="hp-fill"></div></div>
+          <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png" />
         </div>
 
-        <!-- Units Container -->
         <div id="unitsContainer"></div>
       </div>
 
-      <!-- UI Container -->
       <div id="uiContainer">
         <div id="cardHand">
           <div id="nextCardSlot">
-             <div class="title">NEXT</div>
-             <div class="preview"></div>
+            <div class="title">NEXT</div>
+            <div class="preview"></div>
           </div>
           <div class="card-slot" data-index="0"></div>
           <div class="card-slot" data-index="1"></div>
@@ -316,41 +290,37 @@
           <div class="card-slot" data-index="3"></div>
         </div>
         <div id="elixirBarContainer" style="margin-left: 36px;">
-           <div id="elixirBarFill"></div>
-           <div id="elixirText">5</div>
+          <div id="elixirBarFill"></div>
+          <div id="elixirText">5</div>
         </div>
       </div>
-      
+
       <div id="gameOverScreen" style="display: none;">
-         <div class="game-over-content">
-           <h1 id="gameOverTitle">VITÓRIA!</h1>
-           <button id="restartBtn">
-             <i class="fas fa-redo"></i> Menu Principal
-           </button>
-         </div>
+        <div class="game-over-content">
+          <h1 id="gameOverTitle">VITÓRIA!</h1>
+          <button id="restartBtn">
+            <i class="fas fa-redo"></i> Menu Principal
+          </button>
+        </div>
       </div>
     </div>
-    
-    <!-- Card Detail Modal -->
+
     <div id="cardModal" class="modal" style="display: none;">
       <div class="modal-content">
         <span class="close-modal">&times;</span>
-        <div id="cardModalInfo">
-           <!-- Rendered via JS -->
-        </div>
+        <div id="cardModalInfo"></div>
         <div class="modal-actions">
-           <button id="upgradeCardBtn" class="upgrade-btn">
-              <i class="fas fa-arrow-up"></i> Melhorar 
-              <span id="upgradeCostGold">0</span> <i class="fas fa-coins"></i>
-              <span id="upgradeCostCandy">0</span> <i class="fas fa-candy-cane"></i>
-           </button>
+          <button id="upgradeCardBtn" class="upgrade-btn">
+            <i class="fas fa-arrow-up"></i> Melhorar
+            <span id="upgradeCostGold">0</span> <i class="fas fa-coins"></i>
+            <span id="upgradeCostCandy">0</span> <i class="fas fa-candy-cane"></i>
+          </button>
         </div>
       </div>
     </div>
 
     <script type="module" src="/src/main.js"></script>
     <script>
-      // Register Service Worker for PWA
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js').catch(() => {});

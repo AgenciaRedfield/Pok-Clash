@@ -1,10 +1,10 @@
-const CACHE_NAME = 'pokeclash-v1';
+const CACHE_NAME = 'poke-royale-v1';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/src/main.js',
   '/src/style.css',
-  '/logo.png',
+  '/poke-royale.png',
   '/manifest.json'
 ];
 
@@ -38,3 +38,5 @@ self.addEventListener('fetch', (event) => {
     caches.match(event.request).then((cached) => cached || fetch(event.request))
   );
 });
+
+
